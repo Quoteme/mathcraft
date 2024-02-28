@@ -1,4 +1,4 @@
-import «Mathcraft».Basic
+import «Mathcraft».Library
 
 namespace Mathcraft
 
@@ -6,7 +6,7 @@ namespace UI
 
 def listWorlds : IO Unit := do
   IO.println s!"Installed Mathcraft worlds:"
-  let worlds ← Mathcraft.WorldLoader.listWorlds
+  let worlds ← Library.listWorlds
   for world in worlds do
     IO.println s!"· {repr world}"
   if worlds.isEmpty then
