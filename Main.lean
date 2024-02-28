@@ -1,6 +1,4 @@
 import «Mathcraft»
 
-def main : IO Unit :=
-  IO.println s!"Hello, {hello}!"
-
-#eval main
+def main : IO Unit := do
+  Mathcraft.UI.listWorlds
