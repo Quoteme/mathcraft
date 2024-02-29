@@ -1,4 +1,4 @@
 import «Mathcraft»
 
-def main : IO Unit := do
-  Mathcraft.UI.listWorlds
+unsafe def main : IO Unit := do
+  Mathcraft.UI.StartMenu.main

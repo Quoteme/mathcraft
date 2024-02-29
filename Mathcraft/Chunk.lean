@@ -68,4 +68,38 @@ def Chunk.write (c : Chunk) : ByteArray := Id.run do
 def Chunk.filename (x y : Chunk.AxisLocation) : String :=
   s!"chunk_{x}_{y}.bin"
 
+/--
+The filename of a saved chunk encodes the location of said chunk.
+Givne the filename, we can extract the location of the chunk.
+-/
+def Chunk.axisLocationFromFilename (filename : String) : Option (Chunk.AxisLocation × Chunk.AxisLocation) :=
+  let parts := filename.splitOn "_"
+  if parts.length = 3 then
+    let x := parts.get! 1
+    let y := parts.get! 2
+    let x' := x.toInt?
+    let y' := y.toInt?
+    if x'.isSome && y'.isSome then
+      some (x'.get!, y'.get!)
+    else
+      none
+  else
+    none
+
+/--
+Read a chunk from a file path
+-/
+def Chunk.readFromFile (file : System.FilePath) : IO (Option Chunk) := do
+  let ex ← System.FilePath.pathExists file
+  if ex then
+    let bytes ← IO.FS.readBinFile file
+    let p := file.fileName  >>= Chunk.axisLocationFromFilename
+    if p.isSome then
+      let ⟨x,y⟩ := p.get!
+      return Chunk.read x y bytes
+    else
+      return none
+  else
+    return none
+
 end Mathcraft

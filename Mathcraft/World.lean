@@ -45,4 +45,16 @@ def World.getOrCreateChunk (x y : Chunk.AxisLocation) (w : World) : IO Chunk := 
     | some c => return c
     | none => return (← World.createChunk x y w)
 
+def World.listChunks (w : World) : IO (List Chunk) := do
+  -- list all the files in the directory and read in the chunks
+  let files : List System.FilePath := ( ← System.FilePath.walkDir (directory w) (λ _ ↦ return true) ).data
+  let chunks : List Chunk ← files.filterMapM fun file => do
+    let bytes : ByteArray ← IO.FS.readBinFile file
+    let chunk' ← Chunk.readFromFile file
+    if let some chunk := chunk' then
+      return some chunk
+    else
+      return none
+  return chunks
+
 end Mathcraft

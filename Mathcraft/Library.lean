@@ -6,9 +6,7 @@ namespace Mathcraft
 namespace Library
 
 /--
-The WorldLoader is responsible for loading and saving worlds.
-
-It is an abstraction around
+Directory in which we save all worlds
 -/
 def directory : IO System.FilePath := IO.currentDir <&> (· / "worlds")
 
@@ -31,6 +29,20 @@ def listWorlds : IO (List World) := do
   else
     createLibrary
     return []
+
+def saveWorld (w : World) : IO Unit := do
+  let dir <- directory
+  let path := dir / w.directory
+  if !(← System.FilePath.pathExists path) then
+    IO.FS.createDir path
+  return ()
+
+def newWorld (name : String) : IO World := do
+  let dir <- directory
+  let path := dir / name
+  if !(← System.FilePath.pathExists path) then
+    IO.FS.createDir path
+  return {directory := name}
 
 end Library
 
