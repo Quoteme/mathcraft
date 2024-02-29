@@ -121,6 +121,19 @@ def listWorlds : IO Unit := do
   if worlds.isEmpty then
     IO.println "No worlds saved..."
 
+def loadWorld : IO World := do
+  IO.println "Loading a Mathcraft world..."
+  let worlds ← Library.listWorlds
+  IO.println $ Text.Paragraph.box ["Enter the number of the world you want to load."]
+  IO.println $ Text.Table.box {
+    header := ["Number", "Directory"]
+    rows := worlds.enum.map (λ (i, world) ↦ [s!"{i}", world.directory.toString])
+  }
+  IO.println "Number:"
+  let number := ( ← (← IO.getStdin).getLine ).toNat!
+  let world := worlds.get! number
+  return world
+
 def newWorld : IO Unit := do
   IO.println "Creating a new Mathcraft world..."
   IO.println "Name:"
@@ -134,6 +147,7 @@ unsafe def loop : IO Unit := do
     header := ["Command", "Description"]
     rows := [
       ["list", "List installed Mathcraft worlds"],
+      ["load", "Load an existing Mathcraft world"],
       ["new", "Create a new Mathcraft world"],
       ["exit", "Exit the Mathcraft start menu"]
     ]
@@ -142,6 +156,7 @@ unsafe def loop : IO Unit := do
   let cmd ← (← IO.getStdin).getLine <&> String.trim
   match cmd with
   | "list" => listWorlds; loop
+  | "load" => IO.println "Not implemented"; loop
   | "new" => newWorld; loop
   | "exit" => pure ()
   | _ => IO.println "❌ Unknown command"; loop

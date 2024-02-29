@@ -34,7 +34,7 @@ def World.saveChunk (c : Chunk) (w : World) : IO Unit := do
 
 def World.createChunk (x y : Chunk.AxisLocation) (w : World) : IO Chunk := do
   -- create a new chunk with the given x and y coordinates
-  let c : Chunk := Chunk.empty
+  let c : Chunk := Chunk.empty x y
   World.saveChunk c w
   return c
 

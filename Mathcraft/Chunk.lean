@@ -26,9 +26,9 @@ def Chunk.getBlock
   let block := row.get! z
   block
 
-def Chunk.empty : Chunk := {
-    x := 0,
-    y := 0,
+def Chunk.empty (x y : Chunk.AxisLocation) : Chunk := {
+    x := x,
+    y := y,
     data := Array.mkArray Chunk.Width (Array.mkArray Chunk.Height (Array.mkArray Chunk.Depth 0)),
     hHeight := sorry,
     hWidth := sorry,

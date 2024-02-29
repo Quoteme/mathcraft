@@ -19,6 +19,14 @@ def createLibrary : IO Unit := do
 
 def loadWorld (folder : System.FilePath) : IO World := return {directory := folder}
 
+def loadWorldByName (name : String) : IO (Option World) := do
+  let dir <- directory
+  let path := dir / name
+  if (← System.FilePath.pathExists path) then
+    return some (← loadWorld path)
+  else
+    return none
+
 def listWorlds : IO (List World) := do
   -- list all the directories in the current directory
   let dir <- directory
