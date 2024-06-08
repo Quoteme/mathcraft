@@ -1,9 +1,10 @@
-import «Mathcraft».Block
-import «Mathcraft».Chunk
+import «Mathcraft».model.Block
+import «Mathcraft».model.Chunk
 
 namespace Mathcraft
 
 structure World where
+  -- A world is just a directory where the chunks are stored as json files
   directory : System.FilePath
   deriving Inhabited, Repr
 

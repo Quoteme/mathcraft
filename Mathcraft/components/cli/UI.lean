@@ -1,9 +1,11 @@
-import «Mathcraft».Library
+import «Mathcraft».model.Library
 import Init.Data.List.Basic
 
 namespace Mathcraft
 
 namespace UI
+
+namespace CLI
 
 namespace Text
 
@@ -167,6 +169,8 @@ unsafe def main : IO Unit := do
   loop
 
 end StartMenu
+
+end CLI
 
 end UI
 

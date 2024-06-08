@@ -1,4 +1,4 @@
-import «Mathcraft».World
+import «Mathcraft».model.World
 import Mathlib.Control.Traversable.Basic
 
 namespace Mathcraft

@@ -1,4 +1,5 @@
-import «Mathcraft».Block
+import «Mathcraft».model.Block
+import Mathlib.Data.Fin.Basic
 
 namespace Mathcraft
 
@@ -6,52 +7,69 @@ abbrev Chunk.AxisLocation : Type := Int
 abbrev Chunk.Width : Nat := 32
 abbrev Chunk.Height : Nat := 256
 abbrev Chunk.Depth : Nat := 32
-abbrev Chunk.BlockArray : Type := Array (Array (Array (Block)))
 
 structure Chunk where
   x : Chunk.AxisLocation
   y : Chunk.AxisLocation
-  data : Chunk.BlockArray
-  hHeight: Prop := data.size = Chunk.Width
-  hWidth: Prop := data.all (λ row => row.size = Chunk.Height)
-  hDepth: Prop := data.all (λ row => row.all (λ column => column.size = Chunk.Depth))
+  data : Array Block
+  hSize: data.size = Chunk.Width * Chunk.Height * Chunk.Depth
+
+def Chunk.PositionToInt
+  (x : Fin Chunk.Width)
+  (y : Fin Chunk.Height)
+  (z : Fin Chunk.Depth)
+  : Fin (Chunk.Width * Chunk.Height * Chunk.Depth) :=
+  let val := y * Chunk.Width * Chunk.Depth + z * Chunk.Width + x
+  ⟨
+    val,
+    by
+      -- subtract both sides by `Chunk.Width * Chunk.Height * Chunk.Depth`
+      simp only [Nat.cast_ofNat]
+      sorry
+  ⟩
+
+def Chunk.IntToPosition
+  (i : Fin (Chunk.Width * Chunk.Height * Chunk.Depth))
+  : Fin Chunk.Width × Fin Chunk.Height × Fin Chunk.Depth:= (
+    sorry,
+    sorry,
+    sorry
+  )
+
+
 
 def Chunk.getBlock
   (x : Fin Chunk.Width)
   (y : Fin Chunk.Height)
   (z : Fin Chunk.Depth)
   (c : Chunk) : Block :=
-  let slice := c.data.get! x
-  let row := slice.get! y
-  let block := row.get! z
-  block
+  c.data.get! $ y * Chunk.Width * Chunk.Depth + z * Chunk.Width + x
 
 def Chunk.empty (x y : Chunk.AxisLocation) : Chunk := {
     x := x,
     y := y,
-    data := Array.mkArray Chunk.Width (Array.mkArray Chunk.Height (Array.mkArray Chunk.Depth 0)),
-    hHeight := sorry,
-    hWidth := sorry,
-    hDepth := sorry,
+    data := Array.mkArray (Chunk.Width * Chunk.Height * Chunk.Depth) 0,
+    hSize := by
+      unfold Array.size
+      unfold Array.mkArray
+      sorry
   }
 
 def Chunk.read (x y: Chunk.AxisLocation) (bytes : ByteArray) : Chunk := Id.run do
-  let mut data : Chunk.BlockArray := Array.empty
-  for i in [0:Chunk.Width] do
+  let mut data : Array Block := Array.empty
+  for y' in [0:Chunk.Height] do
     let mut row : Array (Array (UInt8)) := Array.empty
-    for j in [0:Chunk.Height] do
+    for z' in [0:Chunk.Depth] do
       let mut column : Array (UInt8) := Array.empty
-      for k in [0:Chunk.Depth] do
-        column := column.push (bytes.get! (i * Chunk.Height * Chunk.Depth + j * Chunk.Depth + k))
-      row := row.push column
-    data := data.push row
+      for x' in [0:Chunk.Width] do
+        data := data.push (bytes.get! (x' * Chunk.Height * Chunk.Depth + y' * Chunk.Depth + z'))
   return {
     x := x,
     y := y,
     data := data,
-    hHeight := sorry,
-    hWidth := sorry,
-    hDepth := sorry,
+    hSize := by
+      unfold Array.size
+      sorry
   }
 
 def Chunk.write (c : Chunk) : ByteArray := Id.run do
