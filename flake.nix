@@ -7,10 +7,9 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:numtide/flake-utils";
     };
-    lean4.url = "github:leanprover/lean4";
   };
 
-  outputs = { self, nixpkgs, flake-utils, lean4 }:
+  outputs = { self, nixpkgs, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
@@ -18,27 +17,10 @@
         };
       in
       {
-        devShell = pkgs.buildFHSUserEnv {
-          name = "lean4";
-          nativeBuildInputs = with pkgs; [
-            pkg-config
-            cmake
-            clang
-            gcc
-            ninja
-            zlib
-          ];
-          targetPkgs = pkgs: with pkgs; [
-            curl
-            git
-            cmake
-            xorg.libX11
-            gcc
+        devShells.default = pkgs.mkShell {
+          buildInputs = with pkgs; [
             clang
             lean4
-            ninja
-            zlib
-            elan
           ];
         };
       }
