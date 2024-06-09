@@ -20,15 +20,25 @@
       {
         devShell = pkgs.buildFHSUserEnv {
           name = "lean4";
+          nativeBuildInputs = with pkgs; [
+            pkg-config
+            cmake
+            clang
+            gcc
+            ninja
+            zlib
+          ];
           targetPkgs = pkgs: with pkgs; [
-            pkgs.curl
-            pkgs.git
-            pkgs.cmake
-            pkgs.gcc
-            pkgs.lean4
-            pkgs.ninja
-            pkgs.zlib
-            pkgs.elan
+            curl
+            git
+            cmake
+            xorg.libX11
+            gcc
+            clang
+            lean4
+            ninja
+            zlib
+            elan
           ];
         };
       }
