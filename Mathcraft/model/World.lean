@@ -42,9 +42,9 @@ def World.createChunk (x y : Chunk.AxisLocation) (w : World) : IO Chunk := do
 def World.getOrCreateChunk (x y : Chunk.AxisLocation) (w : World) : IO Chunk := do
   -- check if the chunk exists
   let c : Option Chunk ← World.getChunk x y w
-    match c with
-    | some c => return c
-    | none => return (← World.createChunk x y w)
+  match c with
+  | some c => return c
+  | none => return (← World.createChunk x y w)
 
 def World.listChunks (w : World) : IO (List Chunk) := do
   -- list all the files in the directory and read in the chunks

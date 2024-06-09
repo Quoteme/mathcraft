@@ -24,7 +24,6 @@ def Chunk.PositionToInt
     val,
     by
       -- subtract both sides by `Chunk.Width * Chunk.Height * Chunk.Depth`
-      simp only [Nat.cast_ofNat]
       sorry
   ⟩
 
