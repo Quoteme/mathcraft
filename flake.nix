@@ -17,12 +17,18 @@
         };
       in
       {
-        devShells.default = pkgs.mkShell {
-          buildInputs = with pkgs; [
-            clang
-            lean4
-          ];
-        };
+        devShells.default = pkgs.mkShell.override
+          {
+            stdenv = pkgs.pkgs.clangStdenv;
+          }
+          {
+            buildInputs = with pkgs; [
+              cmake-language-server
+              lean4
+              clang
+              xorg.libX11
+            ];
+          };
       }
     );
 }
