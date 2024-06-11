@@ -10,11 +10,11 @@ package «mathcraft» where
   ]
 
 require mathlib from git
-  "https://github.com/leanprover-community/mathlib4.git" @ "v4.7.0"
+  "https://github.com/leanprover-community/mathlib4.git" @ "v4.4.0"
 
 
 require raylib from git
-  "https://github.com/KislyjKisel/Raylib.lean" @ "main"
+  "https://github.com/KislyjKisel/Raylib.lean" @ "c62c750"
 
 lean_lib «Mathcraft» where
   -- add library configuration options here
