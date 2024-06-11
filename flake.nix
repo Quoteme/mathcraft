@@ -34,6 +34,7 @@
               xorg.libXcursor
               xorg.libXi
               libGL
+              libgmpris
               raylib
               # Here I tried adding libX11 manually, which did not work :(
               # (lean4.overrideAttrs
