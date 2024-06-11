@@ -27,6 +27,7 @@
               lean4
               unixtools.whereis
               git
+              curl
               cmake
               xorg.libX11
               xorg.libXrandr
