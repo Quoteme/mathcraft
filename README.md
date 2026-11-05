@@ -40,3 +40,15 @@ The window lists the worlds in `<cwd>/library`, one subfolder per world, and
 creates the folder if it doesn't exist. To load another folder, change the path
 and click **Load**. **New world** adds a world to the current folder. Scroll with
 the mouse wheel if the list doesn't fit.
+
+Click a world to open it. Move with WASD and the mouse, and press Esc to go back.
+
+## Theory
+
+`MathcraftTheory` proves that chunks form a basis of a topology, and that the
+entities per chunk form a sheaf on it. `lake build` skips it, as it needs a large
+part of Mathlib. To check the proofs:
+
+```bash
+lake build MathcraftTheory
+```

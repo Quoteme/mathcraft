@@ -7,6 +7,9 @@ import Mathlib.Topology.Sheaves.SheafCondition.UniqueGluing
 A section over an open set `U` is a set of entities located in `U`, and restricting to `V ≤ U`
 forgets the entities outside of `V`. This presheaf is a sheaf.
 
+Open sets are unions of chunks, so only the chunk of an entity matters here, not its exact
+position inside that chunk.
+
 Different chunks don't overlap, so sections over different chunks are always compatible, and
 gluing alone can't relate them. An entity moving between chunks is encoded by what gluing makes
 possible: glue the sections of both chunks to a section over their union, move the entity inside
@@ -22,7 +25,7 @@ abbrev WorldSpace : TopCat := TopCat.of BlockPosition
 
 /-- The entities located in `U`. -/
 def EntitySection (U : Opens WorldSpace) : Type :=
-  {s : Set Entity // ∀ e ∈ s, e.block ∈ U}
+  {s : Set Entity // ∀ e ∈ s, e.anchor ∈ U}
 
 namespace EntitySection
 
@@ -31,7 +34,7 @@ theorem ext {U : Opens WorldSpace} {s t : EntitySection U} (h : ∀ e, e ∈ s.1
 
 /-- The entities of `s` that are located in `V`. -/
 def restrict {U V : Opens WorldSpace} (h : V ≤ U) (s : EntitySection U) : EntitySection V :=
-  ⟨{e ∈ s.1 | e.block ∈ V}, fun _ he ↦ he.2⟩
+  ⟨{e ∈ s.1 | e.anchor ∈ V}, fun _ he ↦ he.2⟩
 
 end EntitySection
 
@@ -51,10 +54,10 @@ def entityPresheaf : TopCat.Presheaf (Type) WorldSpace where
 theorem entityPresheaf_isSheaf : entityPresheaf.IsSheaf := by
   refine isSheaf_of_isSheafUniqueGluing_types _ ?_
   intro ι U sf compatible
-  have shared : ∀ i j e, e ∈ (sf i).1 → e.block ∈ U j → e ∈ (sf j).1 := by
+  have shared : ∀ i j e, e ∈ (sf i).1 → e.anchor ∈ U j → e ∈ (sf j).1 := by
     intro i j e hi hj
     have h := congrArg Subtype.val (compatible i j)
-    have mem : e ∈ {x ∈ (sf i).1 | x.block ∈ U i ⊓ U j} := ⟨hi, (sf i).2 e hi, hj⟩
+    have mem : e ∈ {x ∈ (sf i).1 | x.anchor ∈ U i ⊓ U j} := ⟨hi, (sf i).2 e hi, hj⟩
     exact (Set.ext_iff.1 h e).1 mem |>.1
   refine ⟨⟨⋃ i, (sf i).1, ?_⟩, ?_, ?_⟩
   · intro e he
@@ -82,36 +85,37 @@ section Moves
 
 variable {U : Opens WorldSpace}
 
-/-- `s` with the entity `e` moved to the block `p`, which has to lie in `U`. -/
-def EntitySection.move (s : EntitySection U) (e : Entity) (p : BlockPosition)
-    (hp : p ∈ U) : EntitySection U :=
-  ⟨insert (e.moveTo p) (s.1 \ {e}), by
+/-- `s` with the entity `e` replaced by `target`, its state after moving. -/
+def EntitySection.move (s : EntitySection U) (e target : Entity)
+    (ht : target.anchor ∈ U) : EntitySection U :=
+  ⟨insert target (s.1 \ {e}), by
     rintro x (rfl | hx)
-    · exact hp
+    · exact ht
     · exact s.2 x hx.1⟩
 
 /-- Moving an entity doesn't create or destroy anything: the same ids exist before and after. -/
-theorem EntitySection.ids_move (s : EntitySection U) {e : Entity} (he : e ∈ s.1)
-    (p : BlockPosition) (hp : p ∈ U) :
-    Entity.id '' (s.move e p hp).1 = Entity.id '' s.1 := by
+theorem EntitySection.ids_move (s : EntitySection U) {e target : Entity} (he : e ∈ s.1)
+    (hid : target.id = e.id) (ht : target.anchor ∈ U) :
+    Entity.id '' (s.move e target ht).1 = Entity.id '' s.1 := by
   ext n
   constructor
   · rintro ⟨x, rfl | hx, rfl⟩
-    · exact ⟨e, he, rfl⟩
+    · exact ⟨e, he, hid.symm⟩
     · exact ⟨x, hx.1, rfl⟩
   · rintro ⟨x, hx, rfl⟩
     by_cases h : x = e
     · subst h
-      exact ⟨x.moveTo p, Or.inl rfl, rfl⟩
+      exact ⟨target, Or.inl rfl, hid⟩
     · exact ⟨x, Or.inr ⟨hx, h⟩, rfl⟩
 
 /-- A move only changes the sections over open sets around where it happens. -/
 theorem EntitySection.restrict_move (s : EntitySection U) {V : Opens WorldSpace} (hV : V ≤ U)
-    {e : Entity} {p : BlockPosition} (hp : p ∈ U) (he : e.block ∉ V) (hpV : p ∉ V) :
-    (s.move e p hp).restrict hV = s.restrict hV := by
+    {e target : Entity} (ht : target.anchor ∈ U) (he : e.anchor ∉ V)
+    (htV : target.anchor ∉ V) :
+    (s.move e target ht).restrict hV = s.restrict hV := by
   refine EntitySection.ext fun x ↦ ⟨?_, ?_⟩
   · rintro ⟨rfl | hx, hxV⟩
-    · exact absurd hxV hpV
+    · exact absurd hxV htV
     · exact ⟨hx.1, hxV⟩
   · rintro ⟨hx, hxV⟩
     refine ⟨Or.inr ⟨hx, ?_⟩, hxV⟩
@@ -124,6 +128,11 @@ def chunkPair (a b : Chunk.Coord) : Opens WorldSpace := chunkOpen a ⊔ chunkOpe
 theorem chunk_le_left (a b : Chunk.Coord) : chunkOpen a ≤ chunkPair a b := le_sup_left
 
 theorem chunk_le_right (a b : Chunk.Coord) : chunkOpen b ≤ chunkPair a b := le_sup_right
+
+/-- Entities in the section over the chunk `c` are in that chunk. -/
+theorem EntitySection.chunk_eq {c : Chunk.Coord} (s : EntitySection (chunkOpen c)) {e : Entity}
+    (he : e ∈ s.1) : e.chunk = c :=
+  s.2 e he
 
 /-- Sections over two different chunks glue to the entities of both. -/
 def glueChunks {a b : Chunk.Coord} (sa : EntitySection (chunkOpen a))
@@ -139,56 +148,56 @@ theorem restrict_glueChunks_left {a b : Chunk.Coord} (hab : a ≠ b)
   refine EntitySection.ext fun e ↦ ⟨?_, fun he ↦ ⟨Or.inl he, sa.2 e he⟩⟩
   rintro ⟨he | he, hea⟩
   · exact he
-  · exact absurd (Eq.trans (Eq.symm (sb.2 e he)) hea) hab.symm
+  · exact absurd ((sb.chunk_eq he).symm.trans hea) hab.symm
 
 theorem restrict_glueChunks_right {a b : Chunk.Coord} (hab : a ≠ b)
     (sa : EntitySection (chunkOpen a)) (sb : EntitySection (chunkOpen b)) :
     (glueChunks sa sb).restrict (chunk_le_right a b) = sb := by
   refine EntitySection.ext fun e ↦ ⟨?_, fun he ↦ ⟨Or.inr he, sb.2 e he⟩⟩
   rintro ⟨he | he, heb⟩
-  · exact absurd (Eq.trans (Eq.symm (sa.2 e he)) heb) hab
+  · exact absurd ((sa.chunk_eq he).symm.trans heb) hab
   · exact he
 
 /--
-Moves the entity `e` to the block `p` of the chunk `b`: glue the sections of both chunks,
-move `e` in the glued section, and restrict the result to the chunks again.
+Moves the entity `e` into the chunk `b`, where it ends up as `target`: glue the sections of both
+chunks, move `e` in the glued section, and restrict the result to the chunks again.
 -/
 def moveBetweenChunks {a b : Chunk.Coord} (sa : EntitySection (chunkOpen a))
-    (sb : EntitySection (chunkOpen b)) (e : Entity) (p : BlockPosition) (hp : p.chunk = b) :
+    (sb : EntitySection (chunkOpen b)) (e target : Entity) (ht : target.chunk = b) :
     EntitySection (chunkOpen a) × EntitySection (chunkOpen b) :=
-  let moved := (glueChunks sa sb).move e p (chunk_le_right a b hp)
+  let moved := (glueChunks sa sb).move e target (chunk_le_right a b ht)
   (moved.restrict (chunk_le_left a b), moved.restrict (chunk_le_right a b))
 
 /-- `moveBetweenChunks` takes `e` out of the first chunk... -/
 theorem moveBetweenChunks_left {a b : Chunk.Coord} (hab : a ≠ b)
-    (sa : EntitySection (chunkOpen a)) (sb : EntitySection (chunkOpen b)) {e : Entity}
-    (p : BlockPosition) (hp : p.chunk = b) :
-    (moveBetweenChunks sa sb e p hp).1.1 = sa.1 \ {e} := by
+    (sa : EntitySection (chunkOpen a)) (sb : EntitySection (chunkOpen b)) {e target : Entity}
+    (ht : target.chunk = b) :
+    (moveBetweenChunks sa sb e target ht).1.1 = sa.1 \ {e} := by
   ext x
   constructor
   · rintro ⟨rfl | ⟨hx | hx, hne⟩, hxa⟩
-    · exact absurd (Eq.trans (Eq.symm hxa) hp) hab
+    · exact absurd ((show x.chunk = a from hxa).symm.trans ht) hab
     · exact ⟨hx, hne⟩
-    · exact absurd (Eq.trans (Eq.symm (sb.2 x hx)) hxa) hab.symm
+    · exact absurd ((sb.chunk_eq hx).symm.trans hxa) hab.symm
   · rintro ⟨hx, hne⟩
     exact ⟨Or.inr ⟨Or.inl hx, hne⟩, sa.2 x hx⟩
 
 /-- ...and puts it into the second one, leaving the entities that were already there. -/
 theorem moveBetweenChunks_right {a b : Chunk.Coord} (hab : a ≠ b)
-    (sa : EntitySection (chunkOpen a)) (sb : EntitySection (chunkOpen b)) {e : Entity}
-    (he : e ∈ sa.1) (p : BlockPosition) (hp : p.chunk = b) :
-    (moveBetweenChunks sa sb e p hp).2.1 = insert (e.moveTo p) sb.1 := by
+    (sa : EntitySection (chunkOpen a)) (sb : EntitySection (chunkOpen b)) {e target : Entity}
+    (he : e ∈ sa.1) (ht : target.chunk = b) :
+    (moveBetweenChunks sa sb e target ht).2.1 = insert target sb.1 := by
   ext x
   constructor
   · rintro ⟨rfl | ⟨hx | hx, -⟩, hxb⟩
     · exact Or.inl rfl
-    · exact absurd (Eq.trans (Eq.symm (sa.2 x hx)) hxb) hab
+    · exact absurd ((sa.chunk_eq hx).symm.trans hxb) hab
     · exact Or.inr hx
   · rintro (rfl | hx)
-    · exact ⟨Or.inl rfl, hp⟩
+    · exact ⟨Or.inl rfl, ht⟩
     · refine ⟨Or.inr ⟨Or.inr hx, ?_⟩, sb.2 x hx⟩
       rintro rfl
-      exact hab (Eq.trans (Eq.symm (sa.2 _ he)) (sb.2 _ hx))
+      exact hab ((sa.chunk_eq he).symm.trans (sb.chunk_eq hx))
 
 end Moves
 

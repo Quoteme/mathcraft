@@ -43,6 +43,13 @@ theorem chunkSet_subset_of_isOpen {U : Set BlockPosition} (hU : IsOpen U) {p : B
   obtain rfl : p.chunk = c := hc
   exact hsub
 
+/--
+A block in the chunk of `e`, used to locate `e` in the topology. Which block doesn't matter:
+open sets contain whole chunks, see `chunkSet_subset_of_isOpen`.
+-/
+def Entity.anchor (e : Entity) : BlockPosition :=
+  ⟨e.chunk, ⟨0, by decide⟩, ⟨0, by decide⟩, ⟨0, by decide⟩⟩
+
 /-- The chunk at `c` as an open set. -/
 def chunkOpen (c : Chunk.Coord) : Opens BlockPosition := ⟨chunkSet c, isOpen_chunkSet c⟩
 

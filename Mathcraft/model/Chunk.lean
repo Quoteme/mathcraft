@@ -12,6 +12,14 @@ abbrev Chunk.Depth : Nat := 32
 /-- The location of a chunk in the world. -/
 abbrev Chunk.Coord : Type := Chunk.AxisLocation × Chunk.AxisLocation
 
+/-- The position of a block: the chunk it is in, and where it is inside that chunk. -/
+structure BlockPosition where
+  chunk : Chunk.Coord
+  x : Fin Chunk.Width
+  y : Fin Chunk.Height
+  z : Fin Chunk.Depth
+  deriving DecidableEq, Repr
+
 structure Chunk where
   x : Chunk.AxisLocation
   y : Chunk.AxisLocation
