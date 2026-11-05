@@ -2,35 +2,40 @@
 
 Minecraft written in Lean4.
 
-## Building
+## Compilation
 
-Enter the development shell first, it provides `elan`, `cmake` and the X11/OpenGL
-libraries:
+Everything runs inside the Nix development shell, which provides `elan`, `cmake`
+and the X11/OpenGL libraries:
 
 ```bash
 nix develop
 ```
 
-On a fresh checkout, fetch the dependencies and patch Raylib.lean, whose
-`toolchain-4.4.0` branch does not compile on this project's toolchain as is:
+On a fresh checkout, fetch the dependencies and patch Raylib.lean for this
+project's Lean version:
 
 ```bash
 lake update raylib
 git -C .lake/packages/raylib apply ../../../patches/raylib-lean-4.6.patch
 ```
 
-Use `lake update raylib` rather than a bare `lake update`: Mathlib has no pinned
-revision in `lakefile.lean`, so a bare update would move it to current master.
+Then build:
 
 ```bash
 lake build
 ```
 
-Lake caches dependency lakefiles without their options, so after changing the
-options of a `require`, rebuild once with `lake -R build`.
+Avoid a bare `lake update`, it would move Mathlib to current master. After
+changing the options of a `require`, rebuild once with `lake -R build`.
 
-## Running
+## Usage
+
+Start the game from inside the development shell:
 
 ```bash
-./.lake/build/bin/mathcraft
+lake exe mathcraft
 ```
+
+The window lists the worlds in `<cwd>/library`, one subfolder per world. To load
+another folder, change the path and click **Load**. Scroll with the mouse wheel
+if the list doesn't fit.
