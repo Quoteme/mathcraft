@@ -2,7 +2,13 @@
 
 Minecraft written in Lean4.
 
-## Compilation
+## Screenshot
+
+<img width="800" height="597" alt="image" src="https://github.com/user-attachments/assets/d828c200-2099-4fdd-ab06-a8de7cb4f15e" />
+
+<img width="1036" height="982" alt="image" src="https://github.com/user-attachments/assets/e5688ae6-a29b-44da-b126-7bf8414253f2" />
+
+## Building
 
 Everything runs inside the Nix development shell, which provides `elan`, `cmake`
 and the X11/OpenGL libraries:
