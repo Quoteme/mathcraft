@@ -1,5 +1,6 @@
 import «Mathcraft».model.Entity
 import Mathlib.Topology.Bases
+import Mathlib.Topology.Sets.Opens
 
 /-!
 # The topology of chunks

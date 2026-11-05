@@ -1,5 +1,6 @@
 import «Mathcraft».model.Block
 import Mathlib.Data.Fin.Basic
+import Std.Tactic.Omega
 
 namespace Mathcraft
 
@@ -22,24 +23,50 @@ def Chunk.PositionToInt
   (y : Fin Chunk.Height)
   (z : Fin Chunk.Depth)
   : Fin (Chunk.Width * Chunk.Height * Chunk.Depth) :=
-  let val := y * Chunk.Width * Chunk.Depth + z * Chunk.Width + x
   ⟨
-    val,
+    y.val * Chunk.Width * Chunk.Depth + z.val * Chunk.Width + x.val,
     by
-      -- subtract both sides by `Chunk.Width * Chunk.Height * Chunk.Depth`
-      simp only [Nat.cast_ofNat]
-      sorry
+      have hx : x.val < 32 := x.isLt
+      have hy : y.val < 256 := y.isLt
+      have hz : z.val < 32 := z.isLt
+      show y.val * 32 * 32 + z.val * 32 + x.val < 32 * 256 * 32
+      omega
   ⟩
 
 def Chunk.IntToPosition
   (i : Fin (Chunk.Width * Chunk.Height * Chunk.Depth))
-  : Fin Chunk.Width × Fin Chunk.Height × Fin Chunk.Depth:= (
-    sorry,
-    sorry,
-    sorry
+  : Fin Chunk.Width × Fin Chunk.Height × Fin Chunk.Depth :=
+  have hi : i.val < 32 * 256 * 32 := i.isLt
+  (
+    ⟨i.val % Chunk.Width, by show i.val % 32 < 32; omega⟩,
+    ⟨i.val / (Chunk.Width * Chunk.Depth), by show i.val / 1024 < 256; omega⟩,
+    ⟨i.val / Chunk.Width % Chunk.Depth, by show i.val / 32 % 32 < 32; omega⟩
   )
 
+theorem Chunk.positionToInt_intToPosition
+  (i : Fin (Chunk.Width * Chunk.Height * Chunk.Depth)) :
+  let (x, y, z) := Chunk.IntToPosition i
+  Chunk.PositionToInt x y z = i := by
+  apply Fin.ext
+  show i.val / 1024 * 32 * 32 + i.val / 32 % 32 * 32 + i.val % 32 = i.val
+  omega
 
+theorem Chunk.intToPosition_positionToInt
+  (x : Fin Chunk.Width)
+  (y : Fin Chunk.Height)
+  (z : Fin Chunk.Depth) :
+  Chunk.IntToPosition (Chunk.PositionToInt x y z) = (x, y, z) := by
+  have hx : x.val < 32 := x.isLt
+  have hz : z.val < 32 := z.isLt
+  refine Prod.ext (Fin.ext ?_) (Prod.ext (Fin.ext ?_) (Fin.ext ?_))
+  · show (y.val * 32 * 32 + z.val * 32 + x.val) % 32 = x.val
+    omega
+  · show (y.val * 32 * 32 + z.val * 32 + x.val) / 1024 = y.val
+    omega
+  · show (y.val * 32 * 32 + z.val * 32 + x.val) / 32 % 32 = z.val
+    have h : (y.val * 32 * 32 + z.val * 32 + x.val) / 32 = y.val * 32 + z.val := by omega
+    rw [h]
+    omega
 
 def Chunk.getBlock
   (x : Fin Chunk.Width)
@@ -52,10 +79,7 @@ def Chunk.empty (x y : Chunk.AxisLocation) : Chunk := {
     x := x,
     y := y,
     data := Array.mkArray (Chunk.Width * Chunk.Height * Chunk.Depth) 0,
-    hSize := by
-      unfold Array.size
-      unfold Array.mkArray
-      sorry
+    hSize := Array.size_mkArray _ _
   }
 
 /-- A chunk filled with grass up to `grassHeight`. -/
@@ -67,31 +91,23 @@ def Chunk.flat (x y : Chunk.AxisLocation) (grassHeight : Nat) : Chunk := {
     hSize := Array.size_ofFn _
   }
 
-def Chunk.read (x y: Chunk.AxisLocation) (bytes : ByteArray) : Chunk := Id.run do
-  let mut data : Array Block := Array.empty
-  for y' in [0:Chunk.Height] do
-    let mut row : Array (Array (UInt8)) := Array.empty
-    for z' in [0:Chunk.Depth] do
-      let mut column : Array (UInt8) := Array.empty
-      for x' in [0:Chunk.Width] do
-        data := data.push (bytes.get! (x' * Chunk.Height * Chunk.Depth + y' * Chunk.Depth + z'))
-  return {
+def Chunk.read (x y: Chunk.AxisLocation) (bytes : ByteArray) : Chunk := {
     x := x,
     y := y,
-    data := data,
-    hSize := by
-      unfold Array.size
-      sorry
+    data := Array.ofFn fun i ↦
+      let (x', y', z') := Chunk.IntToPosition i
+      bytes.get! (x'.val * Chunk.Height * Chunk.Depth + y'.val * Chunk.Depth + z'.val),
+    hSize := Array.size_ofFn _
   }
 
 def Chunk.write (c : Chunk) : ByteArray := Id.run do
   let mut bytes : ByteArray := ByteArray.empty
-  for i in [0:Chunk.Width] do
-    for j in [0:Chunk.Height] do
-      for k in [0:Chunk.Depth] do
-        let i' : Fin Chunk.Width := ⟨i, by sorry⟩
-        let j' : Fin Chunk.Height := ⟨j, by sorry⟩
-        let k' : Fin Chunk.Depth := ⟨k, by sorry⟩
+  for hi : i in [0:Chunk.Width] do
+    for hj : j in [0:Chunk.Height] do
+      for hk : k in [0:Chunk.Depth] do
+        let i' : Fin Chunk.Width := ⟨i, hi.2⟩
+        let j' : Fin Chunk.Height := ⟨j, hj.2⟩
+        let k' : Fin Chunk.Depth := ⟨k, hk.2⟩
         bytes := bytes.push $ c.getBlock i' j' k'
   return bytes
 
