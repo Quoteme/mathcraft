@@ -16,10 +16,14 @@ require mathlib from git
 -- `cc` is set so that Lean's clang headers are not passed to the system compiler.
 require raylib from git
   "https://github.com/KislyjKisel/Raylib.lean" @ "toolchain-4.4.0"
-    with NameMap.empty.insert `cc "cc"
+    with (NameMap.empty.insert `cc "cc").insert `raygui ""
 
 lean_lib «Mathcraft» where
   -- add library configuration options here
+
+-- Kept apart from `Mathcraft` so that the game doesn't link Mathlib's sheaf theory.
+-- Check the proofs with `lake build MathcraftTheory`.
+lean_lib «MathcraftTheory»
 
 @[default_target]
 lean_exe «mathcraft» where

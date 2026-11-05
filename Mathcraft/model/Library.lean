@@ -10,14 +10,20 @@ Directory in which we save all worlds
 -/
 def directory : IO System.FilePath := IO.currentDir <&> (· / "worlds")
 
-def createLibrary : IO Unit := do
-  -- create the worlds directory if it doesn't exist
-  let dir <- directory
+/--
+Creates the library folder `dir` and any missing parent folders.
+Returns whether the folder had to be created.
+-/
+def createLibrary (dir : System.FilePath) : IO Bool := do
   if !(← System.FilePath.pathExists dir) then
-    IO.FS.createDir dir
-  return ()
+    IO.FS.createDirAll dir
+    return true
+  else
+    return false
 
-def loadWorld (folder : System.FilePath) : IO World := return {directory := folder}
+def loadWorld (folder : System.FilePath) : IO World := return {
+  directory := folder
+}
 
 def loadWorldByName (name : String) : IO (Option World) := do
   let dir <- directory
@@ -35,8 +41,53 @@ def listWorlds : IO (List World) := do
     let w := folders.data.map loadWorld
     sequence w
   else
-    createLibrary
+    _ <- createLibrary dir
     return []
+
+/--
+The worlds stored in `dir`: one for each of its immediate subfolders, sorted by folder name.
+Creates `dir` if it doesn't exist. Fails if `dir` is not a folder.
+-/
+def listWorldsIn (dir : System.FilePath) : IO (Array World) := do
+  _ <- createLibrary dir
+  if !(← dir.isDir) then
+    throw <| IO.userError s!"Folder not found: {dir}"
+  let entries ← dir.readDir
+  let folders ← entries.filterM (·.path.isDir)
+  let sorted := folders.qsort (·.fileName < ·.fileName)
+  sorted.mapM (loadWorld ·.path)
+
+/--
+Creates a world in `dir` named after the first free number: `World 1`, `World 2`, ...
+It starts out with four flat chunks around the origin.
+-/
+def newWorldIn (dir : System.FilePath) : IO World := do
+  _ <- createLibrary dir
+  let mut n := 1
+  while ← (dir / s!"World {n}").pathExists do
+    n := n + 1
+  let path := dir / s!"World {n}"
+  IO.FS.createDir path
+  let world ← loadWorld path
+  for (x, y) in [((-1 : Chunk.AxisLocation), (-1 : Chunk.AxisLocation)), (-1, 0), (0, -1), (0, 0)] do
+    world.saveChunk (Chunk.flat x y 4)
+  return world
+
+/--
+Deletes the folder of a world. Fails without deleting anything if the folder holds anything but
+chunk files, as a library can list any folder as a world.
+-/
+def deleteWorld (w : World) : IO Unit := do
+  let entries ← w.directory.readDir
+  let isChunkFile (name : String) : Bool :=
+    match Chunk.axisLocationFromFilename name with
+    | some (x, y) => name == Chunk.filename x y
+    | none => false
+  if !entries.all (isChunkFile ·.fileName) then
+    throw <| IO.userError s!"Not a world, it holds other files: {w.directory}"
+  for entry in entries do
+    IO.FS.removeFile entry.path
+  IO.FS.removeDir w.directory
 
 def saveWorld (w : World) : IO Unit := do
   let dir <- directory
