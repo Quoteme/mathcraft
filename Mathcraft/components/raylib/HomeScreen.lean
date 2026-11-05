@@ -11,7 +11,7 @@ def rowHeight : UInt32 := 40
 def rowGap : UInt32 := 10
 def margin : UInt32 := 20
 def columnWidth : UInt32 := 670
-def loadButtonWidth : UInt32 := 100
+def sideButtonWidth : UInt32 := 100
 /-- Maximum length in bytes of the path in the text field. -/
 def pathCapacity : UInt32 := 1024
 
@@ -32,15 +32,18 @@ structure HomeScreen where
   scroll : Nat := 0
   /-- Message shown instead of the world list after a failed load. -/
   error : Option String := none
+  /-- The message to show if the load in progress fails. -/
+  failure : String := "Could not load this folder"
   /-- The load in progress. Starting another one replaces it. -/
   loading : Option (Task (Except IO.Error (Array World))) := none
 
 namespace HomeScreen
 
 /-- Empties the list and runs `action` in the background to fill it again. -/
-def startLoading (s : HomeScreen) (action : IO (Array World)) : BaseIO HomeScreen := do
+def startLoading (s : HomeScreen) (action : IO (Array World))
+    (failure := "Could not load this folder") : BaseIO HomeScreen := do
   let task ← IO.asTask action
-  return { s with worlds := #[], scroll := 0, error := none, loading := some task }
+  return { s with worlds := #[], scroll := 0, error := none, failure, loading := some task }
 
 /-- Loads the worlds of `s.path`. -/
 def load (s : HomeScreen) : BaseIO HomeScreen :=
@@ -50,6 +53,12 @@ def load (s : HomeScreen) : BaseIO HomeScreen :=
 def newWorld (s : HomeScreen) : BaseIO HomeScreen :=
   s.startLoading do
     let _ ← Library.newWorldIn s.path
+    Library.listWorldsIn s.path
+
+/-- Deletes `world` and loads the worlds again. -/
+def deleteWorld (s : HomeScreen) (world : World) : BaseIO HomeScreen :=
+  s.startLoading (failure := "Could not delete this world") do
+    Library.deleteWorld world
     Library.listWorldsIn s.path
 
 /-- The home screen for the library in `<cwd>/library`. -/
@@ -66,7 +75,7 @@ def poll (s : HomeScreen) : IO HomeScreen := do
   | .ok worlds => return { s with worlds, loading := none }
   | .error e =>
     IO.eprintln e
-    return { s with error := some "Could not load this folder", loading := none }
+    return { s with error := some s.failure, loading := none }
 
 def applyWheel (s : HomeScreen) (wheel : Pod.Float32) : HomeScreen :=
   let maxScroll := s.worlds.size - maxVisibleRows
@@ -95,23 +104,28 @@ def draw (s : HomeScreen) : IO (HomeScreen × Option World) := do
 
   if let some message := s.message? then
     Raygui.label (rect left top columnWidth rowHeight) message
+  let sideX := left + columnWidth - sideButtonWidth
+  let mainWidth := columnWidth - sideButtonWidth - rowGap
   let mut clicked : Option World := none
+  let mut deleted : Option World := none
   for i in [0:visibleRows] do
     let world := s.worlds[s.scroll + i]!
     let y := top + i.toUInt32 * step
-    if ← Raygui.button (rect left y columnWidth rowHeight) (← world.name) then
+    if ← Raygui.button (rect left y mainWidth rowHeight) (← world.name) then
       clicked := some world
+    if ← Raygui.button (rect sideX y sideButtonWidth rowHeight) "Delete" then
+      deleted := some world
 
   let newWorldY := top + listRows.toUInt32 * step
   let newWorldClicked ← Raygui.button (rect left newWorldY columnWidth rowHeight) "New world"
 
   let pathY := newWorldY + step
-  let pathBounds := rect left pathY (columnWidth - loadButtonWidth - rowGap) rowHeight
+  let pathBounds := rect left pathY mainWidth rowHeight
   let (toggled, path) ← Raygui.textBox pathBounds s.path pathCapacity s.editing
   let s := { s with path, editing := s.editing != toggled }
 
-  let loadX := left + columnWidth - loadButtonWidth
-  let loadClicked ← Raygui.button (rect loadX pathY loadButtonWidth rowHeight) "Load"
+  let loadClicked ← Raygui.button (rect sideX pathY sideButtonWidth rowHeight) "Load"
+  if let some world := deleted then return (← s.deleteWorld world, none)
   if loadClicked then return (← s.load, none)
   if newWorldClicked && s.loading.isNone then return (← s.newWorld, none)
   return (s, clicked)
