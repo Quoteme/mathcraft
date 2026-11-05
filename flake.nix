@@ -30,21 +30,47 @@
             # raylib: build tooling and X11/OpenGL headers and libraries
             pkgs.pkg-config
             pkgs.libGL
-            pkgs.xorg.libX11
-            pkgs.xorg.libXcursor
-            pkgs.xorg.libXext
-            pkgs.xorg.libXfixes
-            pkgs.xorg.libXi
-            pkgs.xorg.libXinerama
-            pkgs.xorg.libXrandr
-            pkgs.xorg.libXrender
-            pkgs.xorg.xorgproto
+            pkgs.libx11
+            pkgs.libxcursor
+            pkgs.libxext
+            pkgs.libxfixes
+            pkgs.libxi
+            pkgs.libxinerama
+            pkgs.libxrandr
+            pkgs.libxrender
+            pkgs.xorgproto
           ];
           extraOutputsToInstall = [ "dev" ];
         };
+        # GLFW and raylib load these with dlopen at runtime.
+        runtimeLibs = with pkgs; [
+          libGL
+          libx11
+          libxcursor
+          libxext
+          libxfixes
+          libxi
+          libxinerama
+          libxrandr
+          libxrender
+        ];
       in
       {
-        devShell = fhs.env;
+        devShell = pkgs.mkShell {
+          name = "lean4";
+          nativeBuildInputs = with pkgs; [
+            cmake
+            curl
+            elan
+            git
+            ninja
+            pkg-config
+          ];
+          buildInputs = runtimeLibs ++ [ pkgs.xorgproto pkgs.zlib ];
+          LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath runtimeLibs;
+          # raylib's bundled CMake files predate the minimum CMake 4 accepts.
+          CMAKE_POLICY_VERSION_MINIMUM = "3.5";
+        };
       }
     );
 }
