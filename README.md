@@ -2,6 +2,11 @@
 
 Minecraft written in Lean4.
 
+## Screenshot
+
+<img width="1036" height="982" alt="image" src="https://github.com/user-attachments/assets/e5688ae6-a29b-44da-b126-7bf8414253f2" />
+
+
 ## Building
 
 Enter the development shell first, it provides `elan`, `cmake` and the X11/OpenGL
