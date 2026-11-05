@@ -70,6 +70,9 @@
           LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath runtimeLibs;
           # raylib's bundled CMake files predate the minimum CMake 4 accepts.
           CMAKE_POLICY_VERSION_MINIMUM = "3.5";
+          # libraylib-lean.so leaves raylib's symbols undefined and Lean loads it
+          # while compiling, which only works with lazy symbol binding.
+          hardeningDisable = [ "bindnow" ];
         };
       }
     );

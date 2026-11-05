@@ -17,7 +17,7 @@ def main : IO Unit := do
   Raylib.setTargetFPS targetFPS
   repeat
     Raylib.beginDrawing
-    Raylib.clearBackground Raylib.raywhite
+    Raylib.clearBackground .raywhite
     Raylib.endDrawing
     if (← Raylib.windowShouldClose) then break
   Raylib.closeWindow ctx
