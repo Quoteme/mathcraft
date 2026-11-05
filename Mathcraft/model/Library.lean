@@ -10,16 +10,20 @@ Directory in which we save all worlds
 -/
 def directory : IO System.FilePath := IO.currentDir <&> (· / "worlds")
 
-def createLibrary : IO Bool := do
-  -- create the worlds directory if it doesn't exist
-  let dir <- directory
+/--
+Creates the library folder `dir` and any missing parent folders.
+Returns whether the folder had to be created.
+-/
+def createLibrary (dir : System.FilePath) : IO Bool := do
   if !(← System.FilePath.pathExists dir) then
-    IO.FS.createDir dir
+    IO.FS.createDirAll dir
     return true
   else
     return false
 
-def loadWorld (folder : System.FilePath) : IO World := return {directory := folder}
+def loadWorld (folder : System.FilePath) : IO World := return {
+  directory := folder
+}
 
 def loadWorldByName (name : String) : IO (Option World) := do
   let dir <- directory
@@ -37,20 +41,33 @@ def listWorlds : IO (List World) := do
     let w := folders.data.map loadWorld
     sequence w
   else
-    _ <- createLibrary
+    _ <- createLibrary dir
     return []
 
 /--
 The worlds stored in `dir`: one for each of its immediate subfolders, sorted by folder name.
-Fails if `dir` is not a folder.
+Creates `dir` if it doesn't exist. Fails if `dir` is not a folder.
 -/
 def listWorldsIn (dir : System.FilePath) : IO (Array World) := do
+  _ <- createLibrary dir
   if !(← dir.isDir) then
     throw <| IO.userError s!"Folder not found: {dir}"
   let entries ← dir.readDir
   let folders ← entries.filterM (·.path.isDir)
   let sorted := folders.qsort (·.fileName < ·.fileName)
   sorted.mapM (loadWorld ·.path)
+
+/--
+Creates a world in `dir` named after the first free number: `World 1`, `World 2`, ...
+-/
+def newWorldIn (dir : System.FilePath) : IO World := do
+  _ <- createLibrary dir
+  let mut n := 1
+  while ← (dir / s!"World {n}").pathExists do
+    n := n + 1
+  let path := dir / s!"World {n}"
+  IO.FS.createDir path
+  loadWorld path
 
 def saveWorld (w : World) : IO Unit := do
   let dir <- directory

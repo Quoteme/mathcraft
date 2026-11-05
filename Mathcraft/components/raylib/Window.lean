@@ -22,9 +22,9 @@ def loadButtonWidth : UInt32 := 100
 /-- Maximum length in bytes of the path in the text field. -/
 def pathCapacity : UInt32 := 1024
 
-/-- How many world buttons fit above the path row. -/
+/-- How many world buttons fit above the "New world" and path rows. -/
 def maxVisibleRows : Nat :=
-  ((height - 2 * margin - rowHeight) / (rowHeight + rowGap)).toNat
+  ((height - 2 * margin - 2 * rowHeight - rowGap) / (rowHeight + rowGap)).toNat
 
 structure State where
   path : String
@@ -38,10 +38,20 @@ structure State where
   /-- The load in progress. Starting another one replaces it. -/
   loading : Option (Task (Except IO.Error (Array World))) := none
 
-/-- Empties the list and starts loading the worlds of `s.path` in the background. -/
-def State.load (s : State) : BaseIO State := do
-  let task ← IO.asTask (Library.listWorldsIn s.path)
+/-- Empties the list and runs `action` in the background to fill it again. -/
+def State.startLoading (s : State) (action : IO (Array World)) : BaseIO State := do
+  let task ← IO.asTask action
   return { s with worlds := #[], scroll := 0, error := none, loading := some task }
+
+/-- Loads the worlds of `s.path`. -/
+def State.load (s : State) : BaseIO State :=
+  s.startLoading (Library.listWorldsIn s.path)
+
+/-- Creates a world in `s.path` and loads the worlds again. -/
+def State.newWorld (s : State) : BaseIO State :=
+  s.startLoading do
+    let _ ← Library.newWorldIn s.path
+    Library.listWorldsIn s.path
 
 /-- Picks up the result of the load in progress, if it has finished. -/
 def State.poll (s : State) : IO State := do
@@ -75,7 +85,7 @@ def State.draw (s : State) : IO State := do
   let visibleRows := min s.worlds.size maxVisibleRows
   let listRows := if s.worlds.isEmpty then 1 else visibleRows
   let step := rowHeight + rowGap
-  let columnHeight := listRows.toUInt32 * step + rowHeight
+  let columnHeight := (listRows.toUInt32 + 1) * step + rowHeight
   let left := (width - columnWidth) / 2
   let top := (height - columnHeight) / 2
 
@@ -86,14 +96,19 @@ def State.draw (s : State) : IO State := do
     let y := top + i.toUInt32 * step
     let _ ← Raygui.button (rect left y columnWidth rowHeight) name
 
-  let pathY := top + listRows.toUInt32 * step
+  let newWorldY := top + listRows.toUInt32 * step
+  let newWorldClicked ← Raygui.button (rect left newWorldY columnWidth rowHeight) "New world"
+
+  let pathY := newWorldY + step
   let pathBounds := rect left pathY (columnWidth - loadButtonWidth - rowGap) rowHeight
   let (toggled, path) ← Raygui.textBox pathBounds s.path pathCapacity s.editing
   let s := { s with path, editing := s.editing != toggled }
 
   let loadX := left + columnWidth - loadButtonWidth
   let loadClicked ← Raygui.button (rect loadX pathY loadButtonWidth rowHeight) "Load"
-  if loadClicked then s.load else return s
+  if loadClicked then s.load
+  else if newWorldClicked && s.loading.isNone then s.newWorld
+  else return s
 
 /-- Opens the game window and keeps it open until the user closes it. -/
 def main : IO Unit := do

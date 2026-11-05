@@ -36,6 +36,7 @@ Start the game from inside the development shell:
 lake exe mathcraft
 ```
 
-The window lists the worlds in `<cwd>/library`, one subfolder per world. To load
-another folder, change the path and click **Load**. Scroll with the mouse wheel
-if the list doesn't fit.
+The window lists the worlds in `<cwd>/library`, one subfolder per world, and
+creates the folder if it doesn't exist. To load another folder, change the path
+and click **Load**. **New world** adds a world to the current folder. Scroll with
+the mouse wheel if the list doesn't fit.
