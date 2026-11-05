@@ -38,6 +38,18 @@ def listWorlds : IO (List World) := do
     createLibrary
     return []
 
+/--
+The worlds stored in `dir`: one for each of its immediate subfolders, sorted by folder name.
+Fails if `dir` is not a folder.
+-/
+def listWorldsIn (dir : System.FilePath) : IO (Array World) := do
+  if !(← dir.isDir) then
+    throw <| IO.userError s!"Folder not found: {dir}"
+  let entries ← dir.readDir
+  let folders ← entries.filterM (·.path.isDir)
+  let sorted := folders.qsort (·.fileName < ·.fileName)
+  sorted.mapM (loadWorld ·.path)
+
 def saveWorld (w : World) : IO Unit := do
   let dir <- directory
   let path := dir / w.directory

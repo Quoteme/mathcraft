@@ -26,6 +26,9 @@ revision in `lakefile.lean`, so a bare update would move it to current master.
 lake build
 ```
 
+Lake caches dependency lakefiles without their options, so after changing the
+options of a `require`, rebuild once with `lake -R build`.
+
 ## Running
 
 ```bash
