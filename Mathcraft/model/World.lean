@@ -8,6 +8,10 @@ structure World where
   directory : System.FilePath
   deriving Inhabited, Repr
 
+def World.name (w : World) : IO String := do
+  -- get the name of the world from the directory
+  return (w.directory.components.getLastD "unknown")
+
 def World.chunkExists (x y : Chunk.AxisLocation) (w : World) : IO Bool := do
   -- check if the file `{directory}/chunk_{x}_{y}.bin` exists
   let filename : String := Chunk.filename x y
