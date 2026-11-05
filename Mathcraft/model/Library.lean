@@ -59,6 +59,7 @@ def listWorldsIn (dir : System.FilePath) : IO (Array World) := do
 
 /--
 Creates a world in `dir` named after the first free number: `World 1`, `World 2`, ...
+It starts out with four flat chunks around the origin.
 -/
 def newWorldIn (dir : System.FilePath) : IO World := do
   _ <- createLibrary dir
@@ -67,7 +68,10 @@ def newWorldIn (dir : System.FilePath) : IO World := do
     n := n + 1
   let path := dir / s!"World {n}"
   IO.FS.createDir path
-  loadWorld path
+  let world ← loadWorld path
+  for (x, y) in [((-1 : Chunk.AxisLocation), (-1 : Chunk.AxisLocation)), (-1, 0), (0, -1), (0, 0)] do
+    world.saveChunk (Chunk.flat x y 4)
+  return world
 
 def saveWorld (w : World) : IO Unit := do
   let dir <- directory

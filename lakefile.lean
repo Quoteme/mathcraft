@@ -21,6 +21,10 @@ require raylib from git
 lean_lib «Mathcraft» where
   -- add library configuration options here
 
+-- Kept apart from `Mathcraft` so that the game doesn't link Mathlib's sheaf theory.
+-- Check the proofs with `lake build MathcraftTheory`.
+lean_lib «MathcraftTheory»
+
 @[default_target]
 lean_exe «mathcraft» where
   root := `Main

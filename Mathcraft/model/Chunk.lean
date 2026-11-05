@@ -8,6 +8,9 @@ abbrev Chunk.Width : Nat := 32
 abbrev Chunk.Height : Nat := 256
 abbrev Chunk.Depth : Nat := 32
 
+/-- The location of a chunk in the world. -/
+abbrev Chunk.Coord : Type := Chunk.AxisLocation × Chunk.AxisLocation
+
 structure Chunk where
   x : Chunk.AxisLocation
   y : Chunk.AxisLocation
@@ -55,6 +58,15 @@ def Chunk.empty (x y : Chunk.AxisLocation) : Chunk := {
       sorry
   }
 
+/-- A chunk filled with grass up to `grassHeight`. -/
+def Chunk.flat (x y : Chunk.AxisLocation) (grassHeight : Nat) : Chunk := {
+    x := x,
+    y := y,
+    data := Array.ofFn fun (i : Fin (Chunk.Width * Chunk.Height * Chunk.Depth)) ↦
+      if i.val < grassHeight * Chunk.Width * Chunk.Depth then Block.grass else Block.air,
+    hSize := Array.size_ofFn _
+  }
+
 def Chunk.read (x y: Chunk.AxisLocation) (bytes : ByteArray) : Chunk := Id.run do
   let mut data : Array Block := Array.empty
   for y' in [0:Chunk.Height] do
@@ -91,7 +103,8 @@ The filename of a saved chunk encodes the location of said chunk.
 Givne the filename, we can extract the location of the chunk.
 -/
 def Chunk.axisLocationFromFilename (filename : String) : Option (Chunk.AxisLocation × Chunk.AxisLocation) :=
-  let parts := filename.splitOn "_"
+  let stem := (filename : System.FilePath).fileStem.getD filename
+  let parts := stem.splitOn "_"
   if parts.length = 3 then
     let x := parts.get! 1
     let y := parts.get! 2
@@ -112,7 +125,7 @@ def Chunk.readFromFile (file : System.FilePath) : IO (Option Chunk) := do
   if ex then
     let bytes ← IO.FS.readBinFile file
     let p := file.fileName  >>= Chunk.axisLocationFromFilename
-    if p.isSome then
+    if p.isSome && bytes.size == Chunk.Width * Chunk.Height * Chunk.Depth then
       let ⟨x,y⟩ := p.get!
       return Chunk.read x y bytes
     else
