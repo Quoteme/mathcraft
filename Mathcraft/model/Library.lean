@@ -10,12 +10,14 @@ Directory in which we save all worlds
 -/
 def directory : IO System.FilePath := IO.currentDir <&> (· / "worlds")
 
-def createLibrary : IO Unit := do
+def createLibrary : IO Bool := do
   -- create the worlds directory if it doesn't exist
   let dir <- directory
   if !(← System.FilePath.pathExists dir) then
     IO.FS.createDir dir
-  return ()
+    return true
+  else
+    return false
 
 def loadWorld (folder : System.FilePath) : IO World := return {directory := folder}
 
@@ -35,7 +37,7 @@ def listWorlds : IO (List World) := do
     let w := folders.data.map loadWorld
     sequence w
   else
-    createLibrary
+    _ <- createLibrary
     return []
 
 /--
