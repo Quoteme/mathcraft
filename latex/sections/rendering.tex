@@ -1,38 +1,226 @@
 \section{Rendering a Mathcraft Sheaf}\label{sec:rendering}
 
 As we have established in \cref{sec:introduction}, Minecraft worlds with their
-blocks and entities can be represented as sheaves $W$. The most natural next
+blocks and entities can be represented as sheaves $W \in \functorcat{\gamma^{\mathrm{op}}}{\Set}$
+over a graph $\gamma$. The most natural next
 question is: how do we \emph{render} such a sheaf?
 
-Rendering here means that we want to draw an image onto a (computer) screen
-that displays the information contained in $W$. During gameplay, a user is
-typically assigned a dedicated entity called the \emph{player}, and the user
-has a \emph{rendering distance}. The player is an entity $e$, which naturally
-encodes its position $e_p \in \RR^3$. By its $\EntityID$, we wish to associate
-with it a velocity $e_v = \partial e_p / \partial t$, an acceleration
-$e_a = \partial^2 e_p / \partial t^2$ and a \emph{heading
-	direction} $e_d \in S^2$, which encodes where the entity looks.
+% stick figures shared by the figures of this section
+\tikzset{
+	stick/.style={line width=0.5pt},
+	% a person, standing upright
+	pics/person/.style={code={
+					\draw[stick] (-0.15cm,0cm) -- (0cm,0.4cm) -- (0.15cm,0cm)
+					(0cm,0.4cm) -- (0cm,0.75cm)
+					(-0.22cm,0.48cm) -- (0cm,0.68cm) -- (0.22cm,0.48cm);
+					\draw[stick, fill=white] (0cm,0.87cm) circle[radius=0.12cm];
+				}},
+	% a zombie, arms stretched out in front of it
+	pics/zombie/.style={code={
+					\draw[stick] (-0.15cm,0cm) -- (0cm,0.4cm) -- (0.15cm,0cm)
+					(0cm,0.4cm) -- (0cm,0.75cm)
+					(0cm,0.69cm) -- (0.3cm,0.69cm)
+					(0cm,0.62cm) -- (0.3cm,0.62cm);
+					\draw[stick, fill=white] (0cm,0.87cm) circle[radius=0.12cm];
+				}},
+}
+
+% paragraph on the left, Figure (entity sheaf) on the right
+{%
+	\tikzset{
+		twochunks/.style={
+				x={(1.0cm,0cm)}, y={(0.55cm,0.38cm)}, z={(0cm,1.0cm)},
+				line join=round, line cap=round},
+		chunkline/.style={line width=0.4pt, dash pattern=on 2pt off 1.5pt},
+		hiddenline/.style={line width=0.3pt, dash pattern=on 0.8pt off 1.6pt},
+	}
+	% the list of entities at a point: brackets of half-width #2 (in cm)
+	% placed just above the coordinate #1, with contents #3
+	\newcommand{\entitylist}[3]{%
+		\path (#1) ++(0cm,0.12cm) coordinate (#1-label);
+		\begin{scope}[shift={(#1-label)}, scale=1/3, every node/.style={scale=1/3}]
+			\fill[white] (-#2cm,-0.1cm) rectangle (#2cm,1.1cm);
+			\draw[line width=0.45pt]
+			({-#2cm+0.08cm},-0.08cm) -- (-#2cm,-0.08cm) -- (-#2cm,1.08cm) -- ({-#2cm+0.08cm},1.08cm)
+			({#2cm-0.08cm},-0.08cm) -- (#2cm,-0.08cm) -- (#2cm,1.08cm) -- ({#2cm-0.08cm},1.08cm);
+			#3
+		\end{scope}
+	}
+	\noindent
+	\begin{minipage}[t]{0.58\textwidth}
+		\vspace{0pt}
+		Rendering here means that we want to draw an image onto a (computer) screen
+		that displays the information contained in $W$. During gameplay, a user is
+		typically assigned a dedicated entity called the \emph{player}, and the user
+		has a \emph{rendering distance}. The player is given by a unique
+		$e \in \EntityID$ contained in the image of the entity sheaf $E$ of $W$, i.e.\
+		$e \in \operatorname{flatten} \im E(\gamma)$. We can find at least one chunk
+		$C_{i,j,k}$ such that $e \in E(C_{i,j,k})$, and then $e_p = (x,y,z)$, where
+		$(x,y,z) \in [0,w) \times [0,d) \times [0,h)$ is uniquely determined by
+		$e \in E(C_{i,j,k})(x,y,z)$. By its $\EntityID$, we wish to associate
+		with it a velocity $e_v = \partial e_p / \partial t$, an acceleration
+		$e_a = \partial^2 e_p / \partial t^2$ and a \emph{heading
+			direction} $e_d \in S^2$, which encodes in what direction the entity looks.
+	\end{minipage}%
+	\hfill
+	\begin{minipage}[t]{0.4\textwidth}
+		\vspace{0pt}
+		\centering
+		\begin{tikzpicture}[twochunks]
+			\def\w{2.2}\def\d{1.6}\def\h{1.8}
+			% hidden edges
+			\draw[hiddenline] (0,\d,0) -- (2*\w,\d,0)
+			(0,\d,0) -- (0,0,0)
+			(0,\d,0) -- (0,\d,2*\h)
+			(\w,0,0) -- (\w,\d,0) -- (\w,\d,2*\h)
+			(0,0,\h) -- (0,\d,\h) -- (2*\w,\d,\h)
+			(\w,0,\h) -- (\w,\d,\h);
+			% visible edges
+			\draw[chunkline] (0,0,0) -- (2*\w,0,0) -- (2*\w,0,2*\h) -- (0,0,2*\h) -- cycle
+			(\w,0,0) -- (\w,0,2*\h) -- (\w,\d,2*\h)
+			(0,0,\h) -- (2*\w,0,\h) -- (2*\w,\d,\h)
+			(0,0,2*\h) -- (0,\d,2*\h) -- (2*\w,\d,2*\h) -- (2*\w,0,2*\h)
+			(2*\w,0,0) -- (2*\w,\d,0) -- (2*\w,\d,2*\h);
+			% chunk names
+			\node[below] at (0.5*\w,0,0) {$C_{i-w,j,k}$};
+			\node[below] at (1.5*\w,0,0) {$C_{i,j,k}$};
+			\node[fill=white, inner sep=1pt] at (0.5*\w,0,1.5*\h) {$C_{i-w,j,k+h}$};
+			\node[fill=white, inner sep=1pt] at (1.5*\w,0,1.5*\h) {$C_{i,j,k+h}$};
+			% the player e at e_p = (x,y,z), measured from the corner of C_{i,j,k}
+			\def\px{0.7}\def\py{0.8}\def\pz{0.6}
+			\coordinate (player) at (\w+\px,\py,\pz);
+			\begin{scope}[line width=0.5pt, -{Stealth[length=4pt]}]
+				\draw (\w,0,0) -- node[above, inner sep=1.5pt] {$x$} (\w+\px,0,0);
+				\draw (\w+\px,0,0) -- node[above left, inner sep=0.5pt] {$y$} (\w+\px,\py,0);
+				\draw (\w+\px,\py,0) -- node[right, inner sep=1.5pt] {$z$} (player);
+			\end{scope}
+			% two zombies at another point of C_{i,j,k}, one zombie in C_{i-w,j,k}
+			\coordinate (zombies) at (\w+1.5,1.1,0.7);
+			\coordinate (zombie) at (0.8,0.9,0.7);
+			\draw[hiddenline] (zombies) -- (\w+1.5,1.1,0) (zombie) -- (0.8,0.9,0);
+			\fill (player) circle[radius=1.4pt];
+			\fill (zombies) circle[radius=1.4pt];
+			\fill (zombie) circle[radius=1.4pt];
+			\entitylist{player}{0.35}{\pic at (0cm,0cm) {person};}
+			\entitylist{zombies}{0.72}{%
+				\pic at (-0.38cm,0cm) {zombie};
+				\node[inner sep=0pt, scale=2] at (0.08cm,0.1cm) {,};
+				\pic at (0.3cm,0cm) {zombie};
+			}
+			\entitylist{zombie}{0.4}{\pic at (-0.07cm,0cm) {zombie};}
+		\end{tikzpicture}
+		\captionof{figure}{Depiction of the entity sheaf and how coordinates are calculated.}
+		\label{fig:entity-lists}
+	\end{minipage}
+	\par\medskip
+}
 
 The rendering distance in classical Minecraft is given by some natural number
 $r \in \NN$. Given the chunk $C_i$ the player is in, it considers the open set
 \[
 	U = \bigcup_{\operatorname{dist}(i,j) \le r} C_j,
 \]
-where $\operatorname{dist} \colon \gamma \times \gamma \to \NN$ counts how far
-apart two nodes of the graph are, that is, the length of a shortest path
-between them, disregarding any nodes that do not correspond to chunks, such as
-those for faces. Thus two chunks are one step apart exactly when they share a
-common face. For the lattice $X$ from \cref{fig:chunk-lattice},
-$\operatorname{dist}$ is then just the taxicab metric on the chunk indices
-$(i/w, j/d, k/h) \in \ZZ^3$.
+% paragraph on the left, top-down view of the rendered chunks on the right
+{%
+	\tikzset{
+		topview/.style={x=0.165cm, y=0.165cm, line join=round},
+		blk/.style={line width=0.2pt},
+		grass/.style={pattern={Dots[distance=2.2pt, radius=0.28pt]}},
+		water/.style={pattern={Lines[angle=0, distance=1.1pt, line width=0.3pt]}},
+		leaves/.style={pattern={Hatch[angle=0, distance=1.1pt, line width=0.3pt]}},
+		stone/.style={pattern={Dots[distance=1.3pt, radius=0.3pt]}},
+		wood/.style={fill=black},
+	}
+	% a block at (#1,#2) in block coordinates, styled #3
+	\newcommand{\topblock}[3]{\draw[blk, #3] (#1,#2) rectangle ++(1,1);}
+	% a tree: 3x3 leaves around the trunk at (#1,#2)
+	\newcommand{\toptree}[2]{%
+		\foreach \u in {-1,0,1} {\foreach \v in {-1,0,1} {\topblock{#1+\u}{#2+\v}{leaves}}}
+		\topblock{#1}{#2}{wood}%
+	}
+	% an entity #3 standing at (#1,#2), on a small white background
+	\newcommand{\topentity}[3]{%
+		\fill[white] (#1-0.9,#2-0.2) rectangle (#1+1.1,#2+1.75);
+		\pic[scale=1/3] at (#1,#2) {#3};
+	}
+	\par\vspace{-\parskip}\noindent
+	\begin{minipage}[t]{0.58\textwidth}
+		\vspace{0pt}
+		where $\operatorname{dist} \colon \gamma \times \gamma \to \NN$ counts how far
+		apart two nodes of the graph are, that is, the length of a shortest path
+		between them, disregarding any nodes that do not correspond to chunks, such as
+		those for faces. Thus two chunks are one step apart exactly when they share a
+		common face. For the lattice $X$ from \cref{fig:chunk-lattice},
+		$\operatorname{dist}$ is then just the taxicab metric on the chunk indices
+		$(i/w, j/d, k/h) \in \ZZ^3$.
 
-We may however choose any open set, or subgraph, $U$ which contains the player
-for rendering, and we will call it the \emph{rendering set}.
+		We may however choose any open set, or subgraph, $U$ which contains the player
+		for rendering, and we will call it the \emph{rendering set}.
+	\end{minipage}%
+	\hfill
+	\begin{minipage}[t]{0.4\textwidth}
+		\vspace{0pt}
+		\centering
+		\begin{tikzpicture}[topview]
+			% the world from above: 9 x 5 chunks of 4 x 4 blocks each,
+			% the player standing in the centre chunk (4,2)
+			\fill[grass] (0,0) rectangle (36,20);
+			% a lake
+			\foreach \x/\y in {25/3,26/3,27/3,24/4,25/4,26/4,27/4,28/4,24/5,25/5,26/5,27/5,28/5,29/5,25/6,26/6,27/6,28/6,26/7}
+				{\topblock{\x}{\y}{water}}
+			% a stone path
+			\foreach \x in {0,...,13} {\topblock{\x}{10}{stone}}
+			\foreach \y in {11,...,14} {\topblock{13}{\y}{stone}}
+			% trees
+			\toptree{3}{14}
+			\toptree{10}{5}
+			\toptree{21}{16}
+			\toptree{32}{12}
+			\toptree{33}{4}
+			% chunk borders, dotted, except between two chunks of the rendering set
+			\begin{scope}[line width=0.3pt, dash pattern=on 0.8pt off 1.2pt]
+				\foreach \a in {0,...,9} {\foreach \b in {0,...,4} {
+							\pgfmathtruncatemacro{\keep}{
+								(abs(\a-5)+abs(\b-2) > 2) || (abs(\a-4)+abs(\b-2) > 2)}
+							\ifnum\keep=1 \draw (4*\a,4*\b) -- ++(0,4); \fi
+						}}
+				\foreach \a in {0,...,8} {\foreach \b in {0,...,5} {
+							\pgfmathtruncatemacro{\keep}{
+								(abs(\a-4)+abs(\b-3) > 2) || (abs(\a-4)+abs(\b-2) > 2)}
+							\ifnum\keep=1 \draw (4*\a,4*\b) -- ++(4,0); \fi
+						}}
+			\end{scope}
+			% the rendering set U: chunks within taxicab distance 2
+			\def\rendersetpath{(16,20) -- (20,20) -- (20,16) -- (24,16) -- (24,12)
+				-- (28,12) -- (28,8) -- (24,8) -- (24,4) -- (20,4) -- (20,0)
+				-- (16,0) -- (16,4) -- (12,4) -- (12,8) -- (8,8) -- (8,12)
+				-- (12,12) -- (12,16) -- (16,16) -- cycle}
+			% dither everything outside of it
+			\fill[even odd rule, pattern={Lines[angle=45, distance=2pt, line width=0.35pt]}]
+			(0,0) rectangle (36,20) \rendersetpath;
+			\draw[line width=0.9pt] \rendersetpath;
+			% the player in the centre chunk, and some zombies
+			\topentity{18}{9.8}{person}
+			\topentity{14.5}{12.5}{zombie}
+			\topentity{22}{9.5}{zombie}
+			\topentity{18}{13}{zombie}
+			\topentity{2}{17.5}{zombie}
+			\topentity{34}{1}{zombie}
+			\topentity{29.5}{14}{zombie}
+			\topentity{6}{1.5}{zombie}
+		\end{tikzpicture}
+		\captionof{figure}{The chunks within taxicab distance $2$ of the
+			player (bold) form the rendering set $U$ for $r = 2$.}
+		\label{fig:render-distance}
+	\end{minipage}
+	\par\medskip
+}
 
 To model rendering, we will use the topos of trees
 $\toposoftrees \coloneqq \functorcat{\omega^{\mathrm{op}}}{\Set}$, which we
 have introduced and studied in \cite{happelToposTrees2026}. In particular,
-this topos allows us to model ray tracing naturally and in a safe manner.
+this topos allows us to model ray tracing in its most natural way, with the
+added benefit that each render pass will be productive.
 \todo[inline]{Possibly also add the topos for synthetic differential geometry here?}
 The general idea is that we construct a term $\rho$ of the coinductive stream
 type
@@ -108,15 +296,149 @@ where $\rho$ is constructed as above, starting with $\rho_0 = x$ and
 $v_0 = v$.
 
 We can now consider the oriented plane of width $\mathrm{plane}_w$ and height
-$\mathrm{plane}_h$, spanned by orthogonal unit vectors $u, v \in T_{e_p} U$,
+$\mathrm{plane}_h$, spanned by orthogonal unit vectors $u, v \in T_x U$,
 given by
 \[
-	P \coloneqq \left\{ e_p + \exp(a u + b v) \in U \;\middle|\;
+	\Pi \coloneqq \left\{ x + \exp(a u + b v) \in U \;\middle|\;
 	a \in \left[-\tfrac{\mathrm{plane}_w}{2}, \tfrac{\mathrm{plane}_w}{2}\right],\
 	b \in \left[-\tfrac{\mathrm{plane}_h}{2}, \tfrac{\mathrm{plane}_h}{2}\right]
 	\right\},
 \]
-where $\exp \colon (T_{e_p} U, +) \to (\RR^3, +)$ is the exponential map of
+where $\exp \colon (T_x U, +) \to (\RR^3, +)$ is the exponential map of
 Lie groups \cite{happelExponentialMapLie2026}, using the identification of $U$ with subsets of $\RR^3$ from above.
+We can then set $x = e_p + \delta$ for some offset $\delta$. By choosing another
+point $y = e_p + \delta'$, we can then consider all rays from $y$ through the
+points of $\Pi$. This gives us a natural choice of heading vector for
+$\mathrm{ray}_{e_p + \delta', v}$: for every point $q \in \Pi$, we take
+$v = q - y$, the direction from $y$ towards $q$.
+
+\begin{figure}[ht]
+	\centering
+	% chunk grid and projection as in Fig.~\ref{fig:entity-sheaf}
+	\tikzset{
+		sheafpic/.style={
+				x={(1.0cm,0cm)}, y={(0.55cm,0.38cm)}, z={(0cm,1.0cm)},
+				scale=1.05, line join=round, line cap=round},
+		chunkline/.style={line width=0.4pt, dash pattern=on 2pt off 1.5pt},
+		chunkstub/.style={line width=0.3pt, dash pattern=on 0.8pt off 1.6pt},
+		vox/.style={line width=0.3pt, preaction={fill=white}},
+		% ordered "dithering": black and white only
+		dither sparse/.style={pattern={Dots[distance=2.2pt, radius=0.28pt]}},
+		dither mid/.style={pattern={Dots[distance=1.3pt, radius=0.3pt]}},
+		dither lines/.style={pattern={Lines[angle=45, distance=1.3pt, line width=0.3pt]}},
+		dither vert/.style={pattern={Lines[angle=90, distance=1.1pt, line width=0.3pt]}},
+		dither dark/.style={pattern={Hatch[angle=45, distance=1.1pt, line width=0.3pt]}},
+	}
+	% a unit cube at voxel (#1,#2,#3), faces styled #4 (top), #5 (front), #6 (right)
+	\newcommand{\vox}[6]{%
+		\draw[vox,#5] (#1,#2,#3) -- ++(1,0,0) -- ++(0,0,1) -- ++(-1,0,0) -- cycle;
+		\draw[vox,#6] ({#1+1},#2,#3) -- ++(0,1,0) -- ++(0,0,1) -- ++(0,-1,0) -- cycle;
+		\draw[vox,#4] (#1,#2,{#3+1}) -- ++(1,0,0) -- ++(0,1,0) -- ++(-1,0,0) -- cycle;}
+	\newcommand{\dirt}[3]{\vox{#1}{#2}{#3}{dither sparse}{dither mid}{dither dark}}
+	\newcommand{\grass}[3]{\vox{#1}{#2}{#3}{dither sparse}{dither mid}{dither dark}}
+	\newcommand{\wood}[3]{\vox{#1}{#2}{#3}{dither mid}{dither vert}{dither dark}}
+	\newcommand{\leaves}[3]{\vox{#1}{#2}{#3}{dither sparse}{dither lines}{dither dark}}
+	\newcommand{\chest}[3]{%
+		\begin{scope}[shift={({#1+0.1},{#2+0.1},#3)}, scale=0.8]
+			\vox{0}{0}{0}{}{}{dither sparse}
+			\draw[line width=0.3pt] (0,0,0.62) -- (1,0,0.62) -- (1,1,0.62);
+			\fill (0.42,0,0.48) rectangle (0.58,0,0.72);
+		\end{scope}}
+	% the chunk grid of Fig.~\ref{fig:chunk-tiling}, outlined by dashed lines only
+	\newcommand{\chunkgrid}{%
+		\def\w{1}\def\d{1}\def\h{1.25}
+		\def\nx{4}\def\ny{3}\def\nz{2}
+		\pgfmathsetmacro{\X}{\nx*\w}
+		\pgfmathsetmacro{\Y}{\ny*\d}
+		\pgfmathsetmacro{\Z}{\nz*\h}
+		\foreach \i in {0,...,\nx} {
+				\draw[chunkline] (\i*\w,0,0) -- (\i*\w,0,\Z) -- (\i*\w,\Y,\Z);
+				\draw[chunkstub] (\i*\w,0,0) -- (\i*\w,0,-0.45);
+				\draw[chunkstub] (\i*\w,\Y,\Z) -- (\i*\w,\Y+0.6,\Z);
+			}
+		\foreach \k in {0,...,\nz} {
+				\draw[chunkline] (0,0,\k*\h) -- (\X,0,\k*\h);
+				\draw[chunkstub] (0,0,\k*\h) -- (-0.45,0,\k*\h);
+				\draw[chunkstub] (\X,\Y,\k*\h) -- (\X,\Y+0.6,\k*\h);
+			}
+		\foreach \j in {0,...,\ny} {
+				\draw[chunkline] (0,\j*\d,\Z) -- (\X,\j*\d,\Z) -- (\X,\j*\d,0);
+				\draw[chunkstub] (0,\j*\d,\Z) -- (-0.45,\j*\d,\Z);
+				\draw[chunkstub] (\X,\j*\d,0) -- (\X,\j*\d,-0.45);
+			}
+		\draw[chunkline] (\X,0,0) -- (\X,\Y,0) (\X,0,\h) -- (\X,\Y,\h);
+		% hidden edges of the distinguished chunk C_{w,0,h}
+		\draw[chunkline] (\w,\d,\h) -- (2*\w,\d,\h);
+		\draw[chunkline] (\w,0,\h) -- (\w,\d,\h) -- (\w,\d,2*\h);
+		\draw[chunkline] (2*\w,0,\h) -- (2*\w,\d,\h) -- (2*\w,\d,2*\h);
+		% dimensions of a single chunk
+		\draw[{Bar[width=4pt]}-{Bar[width=4pt]}, line width=0.4pt]
+		(0,0,-0.75) -- node[fill=white, inner sep=1.5pt] {$w$} (\w,0,-0.75);
+		\draw[{Bar[width=4pt]}-{Bar[width=4pt]}, line width=0.4pt]
+		(\X+0.55,0,-0.1) -- node[below right=-1pt, inner sep=1.5pt] {$d$} (\X+0.55,\d,-0.1);
+		\draw[{Bar[width=4pt]}-{Bar[width=4pt]}, line width=0.4pt]
+		(-0.85,0,0) -- node[fill=white, inner sep=1.5pt] {$h$} (-0.85,0,\h);
+	}
+	% voxel coordinates inside C_{w,0,h}: 5 x 5 x 6 cubes of side 0.2
+	\tikzset{inchunk/.style={shift={(1.1,0,1.25+0.025)}, scale=0.2}}
+	% the player at e_p = (2.5, 2.5, 2) in voxel coordinates of C_{w,0,h}
+	% (5 x 5 x 6 cubes of side 0.2), and the plane Pi through e_p
+	\newcommand{\playerwithplane}[2]{%
+		\coordinate (ep) at (2.5,2.5,2);
+		\fill[pattern={Dots[distance=#1, radius=0.3pt]}]
+		(2.5,1,0.5) -- (2.5,4,0.5) -- (2.5,4,3.5) -- (2.5,1,3.5) -- cycle;
+		\draw[line width=0.5pt]
+		(2.5,1,0.5) -- (2.5,4,0.5) -- (2.5,4,3.5) -- (2.5,1,3.5) -- cycle;
+		#2
+		\begin{scope}[shift={(ep)}, line width=0.5pt]
+			\draw (-0.3cm,0cm) -- (0cm,0.8cm) -- (0.3cm,0cm);
+			\draw (0cm,0.8cm) -- (0cm,1.45cm);
+			\draw (-0.45cm,0.9cm) -- (0cm,1.3cm) -- (0.45cm,0.9cm);
+			\draw[preaction={fill=white}] (0cm,1.67cm) circle[radius=0.22cm];
+		\end{scope}}
+	\begin{subfigure}[b]{0.58\textwidth}
+		\centering
+		\begin{tikzpicture}[sheafpic]
+			\chunkgrid
+			\begin{scope}[inchunk]
+				\playerwithplane{1.2pt}{}
+			\end{scope}
+		\end{tikzpicture}
+		\caption{The player in the chunk $C_{w,0,h}$.}
+		\label{fig:render-plane-overview}
+	\end{subfigure}%
+	\hfill
+	\begin{subfigure}[b]{0.4\textwidth}
+		\centering
+		\begin{tikzpicture}[sheafpic, scale=3.2]
+			% the chunk C_{w,0,h}, outlined by dashed lines
+			\draw[chunkline] (0,0,0) -- (1,0,0) -- (1,0,1.25) -- (0,0,1.25) -- cycle;
+			\draw[chunkline] (1,0,0) -- (1,1,0) -- (1,1,1.25) -- (1,0,1.25);
+			\draw[chunkline] (0,0,1.25) -- (0,1,1.25) -- (1,1,1.25);
+			\draw[chunkline] (0,0,0) -- (0,1,0) -- (1,1,0);
+			\draw[chunkline] (0,1,0) -- (0,1,1.25);
+			\node[font=\small, anchor=north west, inner sep=2pt] at (0,0,1.25) {$C_{w,0,h}$};
+			\begin{scope}[shift={(0.1,0,0.025)}, scale=0.2]
+				\playerwithplane{1.6pt}{%
+					% tangent vectors at e_p, drawn behind the player
+					\draw[-{Stealth[length=4pt, width=3pt]}, line width=0.6pt] (ep) -- ++(2,0,0)
+					node[font=\small, anchor=west, inner sep=1.5pt] {$e_d$};
+					\draw[-{Stealth[length=4pt, width=3pt]}, line width=0.6pt] (ep) -- ++(0,1.5,0)
+					node[font=\small, anchor=south west, inner sep=1pt] {$u$};
+					\draw[-{Stealth[length=4pt, width=3pt]}, line width=0.6pt] (ep) -- ++(0,0,2.6)
+					node[font=\small, anchor=south, inner sep=1.5pt] {$v$};}
+				\node[font=\small, anchor=south east, inner sep=1pt] at (2.5,1,3.5) {$\Pi$};
+				\fill (ep) circle[radius=0.07];
+				\node[font=\small, anchor=north west, fill=white, inner sep=1pt, xshift=2pt, yshift=-2pt] at (ep) {$x = e_p$};
+			\end{scope}
+		\end{tikzpicture}
+		\caption{Zoomed into $C_{w,0,h}$.}
+		\label{fig:render-plane-zoom}
+	\end{subfigure}
+	\caption{The plane $\Pi$ at the point $x$, here with $\delta = 0$, so that $x = e_p$ is the position of the player. It is spanned by the
+		orthogonal unit vectors $u$ and $v$, here chosen orthogonal to the heading
+		direction $e_d$.}
+	\label{fig:render-plane}
+\end{figure}
 
 % TODO
