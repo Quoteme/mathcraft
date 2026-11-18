@@ -1,0 +1,75 @@
+name: Build and publish PDF
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "latex/**"
+      - ".github/workflows/latex.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deployment at a time, but never cancel one that is in progress.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build mathcraft.pdf
+        uses: xu-cheng/texlive-action@v3
+        with:
+          scheme: full
+          os: debian
+          run: |
+            set -euo pipefail
+            # minted needs Python, imports.tex needs the Symbola font
+            # (JuliaMono and TeX Gyre Pagella ship with TeX Live).
+            apt-get update
+            apt-get install -y --no-install-recommends python3 fontconfig fonts-symbola
+            # Make the fonts shipped with TeX Live visible to XeTeX via fontconfig.
+            cp "$(kpsewhich -var-value TEXMFSYSVAR)/fonts/conf/texlive-fontconfig.conf" \
+              /etc/fonts/conf.d/09-texlive.conf
+            fc-cache -f
+            cd latex
+            latexmk mathcraft.tex
+
+      - name: Assemble site
+        run: |
+          mkdir -p _site
+          cp latex/mathcraft.pdf _site/
+          cat > _site/index.html <<'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <title>Mathcraft: Topoi in Minecraft</title>
+              <meta http-equiv="refresh" content="0; url=mathcraft.pdf">
+            </head>
+            <body>
+              <p><a href="mathcraft.pdf">Mathcraft: Topoi in Minecraft (PDF)</a></p>
+            </body>
+          </html>
+          EOF
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

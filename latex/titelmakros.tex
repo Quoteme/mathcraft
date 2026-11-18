@@ -1,0 +1,103 @@
+%\setcounter{secnumdepth}{4} %Nummerieren bis in die 4. Ebene
+%\setcounter{tocdepth}{4} %Inhaltsverzeichnis bis zur 4. Ebene
+
+\pagestyle{headings}
+
+\sloppy % LaTeX ist dann nicht so streng mit der Silbentrennung
+%~ \MakeShortVerb{\§}
+
+\parindent0mm
+\parskip0.5em
+
+
+{
+\textwidth170mm
+\oddsidemargin30mm
+\evensidemargin30mm
+\addtolength{\oddsidemargin}{-1in}
+\addtolength{\evensidemargin}{-1in}
+
+\parskip0pt plus2pt
+
+% Die Raender muessen eventuell fuer jeden Drucker individuell eingestellt
+% werden. Dazu sind die Werte fuer die Abstaende `\oben' und `\links' zu
+% aendern, die von mir auf jeweils 0mm eingestellt wurden.
+
+%\newlength{\links} \setlength{\links}{10mm}  % hier abzuaendern
+%\addtolength{\oddsidemargin}{\links}
+%\addtolength{\evensidemargin}{\links}
+
+\begin{titlepage}
+\vspace*{14em}
+
+% Titel
+\begin{center}
+	\baselineskip=55pt
+	\textbf{\huge \titel}
+	\baselineskip=0 pt
+\end{center}
+
+%\vspace{7em}
+
+\vfill
+
+% Autor
+\begin{center}
+	\textbf{\Large
+		\bearbeiter
+	}
+
+	\vspace{1em}
+	from \heimatort
+\end{center}
+
+	\end{titlepage}
+
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\begin{titlepage}
+	~                % eine leere Seite hinter dem Deckblatt
+\end{titlepage}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage
+\begin{titlepage}
+
+	\input{acknowledgements}
+
+
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	% Untere Titelmakros. Editieren Sie diese Datei nur, wenn Sie sich
+	% ABSOLUT sicher sind, was Sie da tun!!!
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+	\vspace*{\fill}
+\end{titlepage}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Leerseite bei zweiseitigem Druck
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\ifthenelse{\equal{\zweiseitig}{twoside}}
+{\clearpage\begin{titlepage}~\end{titlepage}}{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\clearpage \setcounter{page}{1}
+\pagenumbering{roman}
+\setcounter{tocdepth}{2}
+\tableofcontents
+
+%\enlargethispage{\baselineskip}
+\clearpage
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Leere Seite, falls Inhaltsverzeichnis mit ungerader Seitenzahl und
+% doppelseitiger Druck
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\ifthenelse{ \( \equal{\zweiseitig}{twoside} \and \not \isodd{\value{page}} \)}
+{\pagebreak \thispagestyle{empty} \cleardoublepage}{\clearpage}
+
+
+% Kapitel soll bei doppelseitigem Druck immer auf der rechten (ungeraden) Seite anfangen (thx @ Philipp Grawe)
+% https://tex.stackexchange.com/a/223387
+\ifthenelse{\boolean{\sectionforcestartright}}
+{\let\oldsection\section % Store \section in \oldsection
+	\renewcommand{\section}{\cleardoublepage\oldsection}}
+{}

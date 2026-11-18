@@ -1,0 +1,263 @@
+
+
+% !TEX root = ./mathcraft.tex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Obere Titelmakros. Editieren Sie diese Datei nur, wenn
+% Sie sich ABSOLUT sicher sind, was Sie da tun!!!
+% Version 2.2 - 2.3.2010
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\AN}{twoside}
+\newcommand{\AUS}{}
+
+
+%\newcommand{\englisch}{}
+%\newcommand{\deutsch}{\usepackage[german]{babel}}
+
+%% Die folgenden auskommentierten Optionen dienen der automatischen
+%% Erkennung des Latex-Kompilers und dem Setzen der davon abhängigen
+%% Einstellungen. Bei Problem z.B. mit dem Einbinden von verschiedenen
+%% Grafiktypen bei Verwendung von PdfLatex oder Latex, einfach die
+%% verschiedenen \usepackage(s) ausprobieren. (Mit diesen Einstellungen
+%% funktionierte diese Vorlage bei der Verwenundg von latex.exe als
+%% Kompiler bei den meisten Studierenden.)
+
+%\newif\ifpdf \ifx\pdfoutput\undefined
+%\pdffalse % we are not running pdflatex
+%\else
+%\pdfoutput=1 % we are running pdflatex
+%\pdfcompresslevel=9 % compression level for text and image;
+%\pdftrue \fi
+
+\documentclass[11pt,a4paper, \zweiseitig]{article}
+\usepackage{ifthen}
+
+
+%\usepackage[iso]{umlaute}
+\usepackage{iftex}
+\ifPDFTeX
+	\PackageError{imports}{This document must be compiled with XeLaTeX (or LuaLaTeX)}{Run xelatex (see the recipe in .vscode/settings.json or .latexmkrc), not pdflatex.}
+\fi
+% inputenc/fontenc are for pdfLaTeX only; XeLaTeX reads UTF-8 natively and
+% fontspec replaces the OT1/T1 font-encoding machinery.
+\usepackage{fontspec}
+\defaultfontfeatures{Ligatures=TeX}
+\setmainfont{TeX Gyre Pagella} % OpenType clone of Palatino, replaces \usepackage{palatino}
+% Monospace font used for \texttt and code listings (minted below). JuliaMono
+% is designed for scientific/programming use and has by far the broadest
+% Unicode coverage of any monospace font (math operators, arrows, blackboard
+% bold, etc.), which is exactly the symbol set used in the pseudocode in this
+% document (▶, ×, ℕ, Ω, λ, ∀, ≤, ...). This lets code blocks use those symbols
+% as plain UTF-8 characters instead of dropping into \mathescape.
+\setmonofont{JuliaMono}[Scale=MatchLowercase]
+% Fallback font for symbols/emoji outside the main font (e.g. \emoji{🌳}).
+% Symbola covers a very large swath of Unicode, incl. most emoji, in outline
+% (monochrome) form, which is what XeLaTeX can actually typeset; the color
+% "Noto Color Emoji" font will not render in color under XeLaTeX/LuaLaTeX.
+\newfontfamily\emojifont{Symbola}
+\newcommand{\emoji}[1]{{\emojifont #1}}
+%\usepackage{makeidx} % um ein Index zu erstellen
+\usepackage[nottoc]{tocbibind}
+\usepackage{fancybox} % fuer die Rahmen
+\usepackage{shortvrb}
+\usepackage{url}
+\usepackage{xcolor}
+\usepackage{nicefrac}
+% minted (https://ctan.org/pkg/minted) replaces `listings`: it renders code
+% via Pygments, so any Unicode symbol supported by the chosen font (see
+% \setmonofont above) can be typed directly in the listing, and it produces
+% much nicer highlighted/framed output ("beautiful pseudocode") than
+% `listings`. It shells out to Pygments (via the `latexminted` helper), so
+% compilation needs -shell-escape (already set in .latexmkrc / .vscode).
+\usepackage{minted}
+\usemintedstyle{bw} % Pygments "bw": bold/italic only, no color or background
+\setminted{
+	fontsize=\small,
+	breaklines=true,
+	autogobble=true, % strip common leading whitespace, so indented \begin{minted} blocks aren't shifted right
+	linenos=true, % classic look: line numbers in the margin,
+	frame=leftline, % separated from the code by a vertical rule
+	framesep=6pt,
+	numbersep=8pt,
+	ignorelexererrors=true, % Pygments flags non-ASCII like ▶ as errors and draws a red box around them
+	baselinestretch=1.2,
+}
+\renewcommand{\theFancyVerbLine}{\scriptsize\arabic{FancyVerbLine}}
+\setlength{\marginparwidth}{2cm}
+\usepackage{todonotes}
+\usepackage{enumitem} % (a), (b), ... labels in definitions
+\usepackage[colorlinks,citecolor=black,linkcolor=black,urlcolor=black]{hyperref} %anklickbares Inhaltsverzeichnis
+
+\ifthenelse{\equal{\biber}{true}}{
+	% only needed for biber
+	\usepackage{csquotes}
+	\usepackage[style=authoryear,natbib=true,backend=biber,mincitenames=1,maxcitenames=2,maxbibnames=99,uniquelist=false,dashed=false]{biblatex}
+
+	% https://tex.stackexchange.com/a/334703/8850
+	\AtEveryBibitem{%
+		\clearfield{issn}
+		\clearfield{isbn}
+		\clearfield{doi}
+		\clearfield{location}
+		\clearlist{location}
+		\clearlist{address}
+
+		\ifentrytype{online}{}{% Remove url except for @online
+			\clearfield{url}
+		}
+	}
+}
+{}%no else
+
+% Falls es bei \citet ein Komma zwischen Name und Jahr gibt:
+% https://tex.stackexchange.com/questions/312539/unwanted-comma-between-author-and-year-using-citet-command
+% (thx @ Markus Brenneis)
+%\DeclareDelimFormat[cbx@textcite]{nameyeardelim}{\addspace}
+
+
+
+\ifthenelse{\equal{\sprache}{deutsch}}{
+	\usepackage[ngerman]{babel}
+	% Bibtex u.a -> et al.
+	\ifthenelse{\equal{\biber}{true}}{
+		\DefineBibliographyStrings{ngerman}{
+			andothers = {{et\,al\adddot}},
+		}
+		\newcommand{\references}{Literatur}
+	}
+	{} % do nothing when not using biber
+	\usepackage[autostyle, german=quotes]{csquotes} % Deutsche Anführungszeichen im Literaturverzeichnis (thx @ Markus Brenneis)
+
+}{ \newcommand{\references}{References}}
+
+\usepackage{a4wide} % ganze A4 Weite verwenden
+
+
+
+%\ifpdf
+%\usepackage[pdftex,xdvi]{graphicx}
+%\usepackage{thumbpdf} %thumbs fuer Pdf
+%\usepackage[pdfstartview=FitV]{hyperref} %anklickbares Inhaltsverzeichnis
+%\else
+%\usepackage[dvips,xdvi]{graphicx}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage[section]{placeins} % floats stay within their section
+\usepackage{array}
+\usepackage{booktabs}
+
+%\fi
+
+% Mathematik / kategorientheoretische Notation und kommutative Diagramme
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{stmaryrd} % \llbracket, \rrbracket
+\usepackage{tikz-cd}
+\usepackage{tikz-3dplot}
+\usepackage{pgfplots}
+\usepackage[super]{nth}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{3d, positioning, arrows.meta, patterns, patterns.meta}
+% chains of nodes drawn by the forests F(U_m) of the elements U_m of \Omega(n)
+\tikzset{forestrow/.style={baseline=-0.5ex, x=0.6cm, >=Stealth},
+	onode/.style={draw, rounded corners=3pt, fill=white, inner sep=1pt,
+			font=\scriptsize, minimum width=4mm, minimum height=3.5mm},
+	oedge/.style={->, thin}}
+% \forestchain{0,1,\cdots,n}: a chain of labeled nodes, each pointing to its
+% left neighbour; a \cdots entry is drawn without a box
+\def\forestchaindots{\cdots}
+\newcommand{\forestchain}[1]{\tikz[forestrow]{%
+		\foreach \l [count=\i, remember=\i as \j (initially 0)] in {#1} {%
+				\ifx\l\forestchaindots \tikzset{chainnode/.style={inner sep=0pt}}%
+				\else \tikzset{chainnode/.style={onode}}\fi
+				\ifnum\i=1 \node[chainnode] (v\i) at (0, 0) {$\l$};%
+				\else \node[chainnode, right=1.8mm of v\j] (v\i) {$\l$}; \draw[oedge] (v\i) -- (v\j);\fi
+			}}}
+\usepackage{mathpartir} % inference rules for the internal logic
+\usepackage{aliascnt}
+\usepackage[capitalise,nameinlink]{cleveref}
+
+\newtheorem{theorem}{Theorem}[section]
+% each environment gets an alias of the theorem counter, so that the shared
+% numbering is kept but cleveref sees the environment name, not "theorem"
+\newcommand{\newsharedtheorem}[2]{%
+	\newaliascnt{#1}{theorem}%
+	\newtheorem{#1}[#1]{#2}%
+	\aliascntresetthe{#1}}
+\newsharedtheorem{definition}{Definition}
+\newsharedtheorem{proposition}{Proposition}
+\newsharedtheorem{lemma}{Lemma}
+\newsharedtheorem{corollary}{Corollary}
+\newsharedtheorem{example}{Example}
+\newsharedtheorem{remark}{Remark}
+
+\newcommand{\Set}{\mathbf{Set}}
+\newcommand{\Top}{\mathbf{Top}}
+\newcommand{\functorcat}[2]{[#1,\, #2]}
+\newcommand{\toposoftrees}{\mathcal{S}}
+\newcommand{\toposofgraphs}{\mathcal{G}}
+\newcommand{\restr}[2]{#1|_{#2}}
+\newcommand{\Sub}[1]{\mathrm{Sub}_{#1}}
+\newcommand{\NN}{\mathbb{N}}
+\newcommand{\ZZ}{\mathbb{Z}}
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\CC}{\mathbb{C}}
+\newcommand{\Stream}{\texttt{Str}}
+\newcommand{\List}{\mathrm{List}}
+\newcommand{\Blocks}{\mathrm{Blocks}}
+\newcommand{\Entities}{\mathrm{Entities}}
+\newcommand{\BlockID}{\mathrm{BlockID}}
+\newcommand{\EntityID}{\mathrm{EntityID}}
+\newcommand{\Hom}{\text{Hom}}
+\newcommand{\Nat}{\text{Nat}}
+\newcommand{\StreamG}{\Stream}
+\newcommand{\StreamedTreeG}{\texttt{StrTree}}
+\newcommand{\BinTreeG}{\texttt{Tree}}
+\newcommand{\im}{\text{im }}
+\newcommand{\treeEmbedding}{F}
+\newcommand{\later}{\mathord{\blacktriangleright}}
+\newcommand{\before}{\mathord{\blacktriangleleft}}
+\newcommand{\laterModal}{\triangleright}
+\newcommand{\alwaysModal}{\Box}
+\newcommand{\eventuallyModal}{\Diamond}
+\newcommand{\liftingMonad}{L}
+\newcommand{\laterT}{\triangleright}
+\newcommand{\fixLater}{\text{fix}}
+% semantic brackets for the interpretation of the internal language
+\newcommand{\sem}[1]{[\![#1]\!]}
+\newcommand{\id}{\text{id}}
+\newcommand{\avg}{\text{avg}}
+\newcommand{\true}{\text{true}}
+\newcommand{\false}{\text{false}}
+\newcommand{\Hask}{\mathbf{Hask}}
+\newcommand{\Bool}{\text{Bool}}
+\newcommand{\RForest}{\mathbf{RForest}}
+% Signature components as in the Elephant (D1.1.1); optional argument is the signature
+\newcommand{\SigType}[1][\Sigma]{#1\text{-}\mathrm{Type}}
+\newcommand{\SigFun}[1][\Sigma]{#1\text{-}\mathrm{Fun}}
+\newcommand{\SigRel}[1][\Sigma]{#1\text{-}\mathrm{Rel}}
+\newcommand{\SigTerm}[1][\Sigma]{#1\text{-}\mathrm{Term}}
+\newcommand{\SigForm}[1][\Sigma]{#1\text{-}\mathrm{Form}}
+
+\newcommand{\redt}[1] {
+	\textcolor{red}{#1}}
+
+\newcommand{\oranget}[1] {
+	\textcolor{orange}{#1}}
+
+\newcommand{\purplet}[1] {
+	\textcolor{purple}{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%% Massangaben fuer die Arbeit %%%%%%%%%%%%%%%
+\setlength{\textwidth}{15cm}
+
+\setlength{\oddsidemargin}{35mm}
+\setlength{\evensidemargin}{25mm}
+
+\addtolength{\oddsidemargin}{-1in}
+\addtolength{\evensidemargin}{-1in}
+
+\ifthenelse{\equal{\biber}{true}}{\addbibresource{references.bib}}{}
+
+%\makeindex

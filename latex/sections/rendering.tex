@@ -1,0 +1,15 @@
+\section{Rendering a Mathcraft Sheaf}\label{sec:rendering}
+
+As we have established in \cref{sec:introduction}, Minecraft worlds with their
+blocks and entities can be represented as sheaves $W$. The most natural next
+question is: how do we \emph{render} such a sheaf?
+
+Rendering here means that we want to draw an image onto a (computer) screen
+that displays the information contained in $W$. During gameplay, a user is
+typically assigned a dedicated entity called the \emph{player}, and the user
+has a \emph{rendering distance}. The player is an entity $e$, which naturally
+encodes its position $e_p \in \RR^3$. By its $\EntityID$, we wish to associate
+with it a velocity $e_v = \partial e_p / \partial t$ and a \emph{heading
+	direction} $e_d \in S^2$, which encodes where the entity looks.
+
+% TODO

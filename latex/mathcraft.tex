@@ -1,0 +1,90 @@
+% !TEX root = mathcraft.tex
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% BEGINN EINSTELLUNG FUER DIE ARBEIT. UNBEDINGT ERFORDERLICH! %%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Geben Sie Ihren Namen hier an:
+
+\newcommand{\bearbeiter}{Luca Leon Happel}
+
+% Herkunftsort des Bearbeiters (erscheint auf dem Deckblatt):
+\newcommand{\heimatort}{Mönchengladbach}
+
+% Geben Sie hier den Titel Ihrer Arbeit an:
+\newcommand{\titel}{Mathcraft: Topoi in Minecraft}
+
+% Falls Sie die Arbeit zweiseitig ausdrucken wollen,
+% benutzen Sie die folgende Zeile mit
+% \AN fuer zweiseitigen Druck
+% \AUS fuer einseitigen Druck
+\newcommand{\zweiseitig}{\AN}
+% true fuer biber, false fuer klassischen Zitierstil
+%\newcommand{\biber}{false}
+\newcommand{\biber}{true}
+
+% Falls Sections immer rechts beginnen sollen.
+\newcommand{\sectionforcestartright}{false}
+%\newcommand{\sectionforcestartright}{true}
+
+% Falls die Arbeit in englischer Sprache verfasst
+% werden soll, dann benutzen Sie die folgende Zeile mit
+% englisch fuer englische Sprache
+% deutsch fuer deutsche Sprache
+\newcommand{\sprache}{englisch}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% ENDE EINSTELLUNGEN %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Die folgende Zeile NICHT EDITIEREN oder loeschen
+\input{imports}
+\begin{document}
+\input{titelmakros}
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% BEGINN TEXTTEIL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Text entweder direkt hier hinein schreiben oder, im Sinne der
+% besseren Uebersichtlich- und Bearbeitbarkeit mittels \input die
+% einzelnen Textteile hier einbinden.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{sections/introduction}
+
+\input{sections/rendering}
+
+
+\input{sections/conclusion}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%% ENDE TEXTTEIL %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\clearpage
+
+% Entfernen Sie das Kommentar aus der nachfolgenden Zeile, falls Sie einen Anhang in der Arbeit verwenden wollen. Beachten Sie, dass Sie sich im Verlauf der Arbeit mit \ref{...} (z.B. \ref{anhang:zusatz1}) auf den Anhang beziehen.
+\input{anhang}
+
+\ifthenelse{\equal{\biber}{true}}{ %with biber do
+	\DeclareNameAlias{sortname}{first-last}
+	\printbibliography[heading=bibintoc, title=\references]
+}{ %without biber do
+	\bibliography{references}
+	\bibliographystyle{alphadin}
+}
+%\vspace*{\fill}
+
+\clearpage
+
+%\listoffigures
+
+%\listoftables
+
+%\pagebreak
+
+%\printindex
+\end{document}
