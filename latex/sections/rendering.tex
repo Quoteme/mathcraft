@@ -59,8 +59,10 @@ question is: how do we \emph{render} such a sheaf?
 		$(x,y,z) \in [0,w) \times [0,d) \times [0,h)$ is uniquely determined by
 		$e \in E(C_{i,j,k})(x,y,z)$. By its $\EntityID$, we wish to associate
 		with it a velocity $e_v = \partial e_p / \partial t$, an acceleration
-		$e_a = \partial^2 e_p / \partial t^2$ and a \emph{heading
-			direction} $e_d \in S^2$, which encodes in what direction the entity looks.
+		$e_a = \partial^2 e_p / \partial t^2$, a \emph{heading
+			direction} $e_d \in S^2$, which encodes in what direction the entity looks,
+		and an \emph{entity height} $e_h \in \RR_{\ge 0}$, which is the offset
+		between $e_p$ and where the camera shall be.
 	\end{minipage}%
 	\hfill
 	\begin{minipage}[t]{0.4\textwidth}
@@ -154,8 +156,9 @@ $r \in \NN$. Given the chunk $C_i$ the player is in, it considers the open set
 		$\operatorname{dist}$ is then just the taxicab metric on the chunk indices
 		$(i/w, j/d, k/h) \in \ZZ^3$.
 
-		We may however choose any open set, or subgraph, $U$ which contains the player
-		for rendering, and we will call it the \emph{rendering set}.
+		\medskip
+		We may however choose any open set, or subgraph, $U$ for rendering, and we
+		will call it the \emph{rendering set}.
 	\end{minipage}%
 	\hfill
 	\begin{minipage}[t]{0.4\textwidth}
@@ -227,26 +230,24 @@ type
 \[
 	\Stream(U) \cong U \times \later \Stream(U)
 \]
-in $\toposoftrees$, which starts at the player $e$ in $W(U)$ by setting
+in $\toposoftrees$, which starts at some point $p$ in a chunk $C_j \subseteq U$
+by setting
 \[
-	\restr{\rho}{0} = [\rho_0] \coloneqq [e_p],
+	\restr{\rho}{0} = [\rho_0] \coloneqq [p],
 \]
-and which follows the geodesic spanned by $e_v$ until it collides with a block
-or an entity. We use here that each chunk $C_j \subseteq U$ is trivially
-diffeomorphic to $[0,w] \times [0,d] \times [0,h]$ via a chart
-$\varphi_j \colon C_j \to [0,w] \times [0,d] \times [0,h]$ (for the lattice
-$X$, simply the translation that moves the corner of $C_j$ to the origin), and
-that for each $v \in U$ we can find an appropriate subset of $\RR^3$ which it
-lies in, such that addition, differentiation and a canonical dot product are
-well defined. Write $v_0 \coloneqq e_v$ for the initial direction of the ray,
-and let
+and which follows a geodesic spanned by a tangent vector $v_0 \in T_p C_j$
+until it collides with a block or an entity. Here
+$\exp \colon (T_p C_j, +) \to (\RR^3, +)$ is the exponential map of Lie groups
+\cite{happelExponentialMapLie2026}. Using $\exp$, we can define
 \[
-	\lambda_{n+1} \coloneqq \inf \{\lambda > 0 \mid \rho_n + \lambda v_n
+	\lambda_{n+1} \coloneqq \inf \{\lambda > 0 \mid \rho_n + \exp(\lambda v_n)
 	\text{ lies in a block or an entity}\} \in \RR_{\ge 0} \cup \{\infty\}
 \]
-be the distance (in units of $v_n$) to the next collision, so that
-$\rho_{n+1} = \rho_n + \lambda_{n+1} v_n$ is the point of collision. There, the
-ray is reflected and continues in the direction
+as the distance (in units of $v_n$) to the next collision, so that
+$\rho_{n+1} = \rho_n + \exp(\lambda_{n+1} v_n)$ is the point of collision.
+(The addition is well defined, as $U$ is covered by chunks $C_j$, which are each
+diffeomorphic to $[0,w] \times [0,d] \times [0,h] \subseteq \RR^3$, and as such
+can be identified with subsets of $\RR^3$.) There, the ray is reflected and continues in the direction
 \[
 	v_{n+1} \coloneqq v_n - 2 \langle v_n, \nu_{n+1} \rangle \nu_{n+1},
 \]
@@ -259,7 +260,7 @@ of a block is axis-aligned, so $\nu_{n+1} \in \{\pm e_1, \pm e_2, \pm e_3\}$, an
 the reflection simply flips the sign of one coordinate of $v_n$. Thus, when
 colliding with a block,
 \[
-	\restr{\rho}{n+1} = [\rho_0, \dots, \rho_n, \rho_n + \lambda_{n+1} v_n],
+	\restr{\rho}{n+1} = [\rho_0, \dots, \rho_n, \rho_n + \exp(\lambda_{n+1} v_n)],
 	\qquad
 	v_{n+1} = v_n - 2 \langle v_n, \nu_{n+1} \rangle \nu_{n+1}.
 \]
@@ -269,7 +270,7 @@ $f$ is a sphere of radius $s$ around its position $f_p$. The unit normal at the
 point of collision is then $\nu_{n+1} = (\rho_{n+1} - f_p) / s$, which gives,
 when colliding with an entity $f$,
 \[
-	\restr{\rho}{n+1} = [\rho_0, \dots, \rho_n, \rho_n + \lambda_{n+1} v_n],
+	\restr{\rho}{n+1} = [\rho_0, \dots, \rho_n, \rho_n + \exp(\lambda_{n+1} v_n)],
 	\qquad
 	v_{n+1} = v_n - \frac{2}{s^2} \langle v_n, \rho_{n+1} - f_p \rangle (\rho_{n+1} - f_p).
 \]
@@ -304,8 +305,8 @@ given by
 	b \in \left[-\tfrac{\mathrm{plane}_h}{2}, \tfrac{\mathrm{plane}_h}{2}\right]
 	\right\},
 \]
-where $\exp \colon (T_x U, +) \to (\RR^3, +)$ is the exponential map of
-Lie groups \cite{happelExponentialMapLie2026}, using the identification of $U$ with subsets of $\RR^3$ from above.
+where $\exp \colon (T_x U, +) \to (\RR^3, +)$ is the exponential map from
+above.
 We can then set $x = e_p + \delta$ for some offset $\delta$. By choosing another
 point $y = e_p + \delta'$, we can then consider all rays from $y$ through the
 points of $\Pi$. This gives us a natural choice of heading vector for
