@@ -89,7 +89,7 @@ def poll (s : GameScreen) : IO GameScreen := do
 /-- Draws one frame. Returns `none` once the user leaves the world by pressing escape. -/
 def frame (s : GameScreen) : IO (Option GameScreen) := do
   let s ← s.poll
-  let camera ← Raylib.updateCamera s.camera .free
+  let camera ← Raylib.updateCamera s.camera .firstPerson
   let s := { s with camera }
   Raylib.beginMode3D s.camera
   for voxel in s.voxels do

@@ -59,7 +59,6 @@ def listWorldsIn (dir : System.FilePath) : IO (Array World) := do
 
 /--
 Creates a world in `dir` named after the first free number: `World 1`, `World 2`, ...
-It starts out with four flat chunks around the origin.
 -/
 def newWorldIn (dir : System.FilePath) : IO World := do
   _ <- createLibrary dir
@@ -68,26 +67,11 @@ def newWorldIn (dir : System.FilePath) : IO World := do
     n := n + 1
   let path := dir / s!"World {n}"
   IO.FS.createDir path
-  let world ← loadWorld path
-  for (x, y) in [((-1 : Chunk.AxisLocation), (-1 : Chunk.AxisLocation)), (-1, 0), (0, -1), (0, 0)] do
-    world.saveChunk (Chunk.flat x y 4)
-  return world
+  loadWorld path
 
-/--
-Deletes the folder of a world. Fails without deleting anything if the folder holds anything but
-chunk files, as a library can list any folder as a world.
--/
-def deleteWorld (w : World) : IO Unit := do
-  let entries ← w.directory.readDir
-  let isChunkFile (name : String) : Bool :=
-    match Chunk.axisLocationFromFilename name with
-    | some (x, y) => name == Chunk.filename x y
-    | none => false
-  if !entries.all (isChunkFile ·.fileName) then
-    throw <| IO.userError s!"Not a world, it holds other files: {w.directory}"
-  for entry in entries do
-    IO.FS.removeFile entry.path
-  IO.FS.removeDir w.directory
+/-- Deletes the folder of a world, with everything in it. -/
+def deleteWorld (w : World) : IO Unit :=
+  IO.FS.removeDirAll w.directory
 
 def saveWorld (w : World) : IO Unit := do
   let dir <- directory
