@@ -9,7 +9,8 @@ that displays the information contained in $W$. During gameplay, a user is
 typically assigned a dedicated entity called the \emph{player}, and the user
 has a \emph{rendering distance}. The player is an entity $e$, which naturally
 encodes its position $e_p \in \RR^3$. By its $\EntityID$, we wish to associate
-with it a velocity $e_v = \partial e_p / \partial t$ and a \emph{heading
+with it a velocity $e_v = \partial e_p / \partial t$, an acceleration
+$e_a = \partial^2 e_p / \partial t^2$ and a \emph{heading
 	direction} $e_d \in S^2$, which encodes where the entity looks.
 
 % TODO

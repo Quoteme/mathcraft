@@ -1,17 +1,17 @@
 # Fdb version 4
-["biber mathcraft"] 1795010151.73174 "mathcraft.bcf" "mathcraft.bbl" "mathcraft" 1795013169.44281 0
-  "mathcraft.bcf" 1795013168.86845 108770 6953ed86fcb3cc14c5d8d988736a32e5 "xelatex"
+["biber mathcraft"] 1795010151.73174 "mathcraft.bcf" "mathcraft.bbl" "mathcraft" 1795013681.42696 0
+  "mathcraft.bcf" 1795013680.94153 108770 6953ed86fcb3cc14c5d8d988736a32e5 "xelatex"
   "references.bib" 1795008234.62254 222 f05322e16333be105ca65d6aca6107d2 ""
   (generated)
   "mathcraft.bbl"
   "mathcraft.blg"
   (rewritten before read)
-["xdvipdfmx"] 1795013169.08711 "mathcraft.xdv" "mathcraft.pdf" "mathcraft" 1795013169.4486 0
-  "mathcraft.xdv" 1795013168.87184 535640 809871e7eaf9427d33768206d84a4599 "xelatex"
+["xdvipdfmx"] 1795013681.13626 "mathcraft.xdv" "mathcraft.pdf" "mathcraft" 1795013681.43142 0
+  "mathcraft.xdv" 1795013680.94517 535892 1e0d4d89d9c1b82a19bd33cd439fa026 "xelatex"
   (generated)
   "mathcraft.pdf"
   (rewritten before read)
-["xelatex"] 1795013159.70391 "mathcraft.tex" "mathcraft.xdv" "mathcraft" 1795013169.44303 0
+["xelatex"] 1795013671.77697 "mathcraft.tex" "mathcraft.xdv" "mathcraft" 1795013681.42708 0
   "/nix/store/98332c5yssnp7sjlv57wawbrix2lz6j2-texlive-combined-full-2025-final-texmfdist/fonts/map/fontname/texfonts.map" 1 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/nix/store/98332c5yssnp7sjlv57wawbrix2lz6j2-texlive-combined-full-2025-final-texmfdist/fonts/tfm/adobe/zapfding/pzdr.tfm" 1 1528 f853c4d1b4e0550255e02831fdc8496f ""
   "/nix/store/98332c5yssnp7sjlv57wawbrix2lz6j2-texlive-combined-full-2025-final-texmfdist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1 1004 54797486969f23fa377b128694d548df ""
@@ -272,15 +272,15 @@
   "acknowledgements.tex" 1795007072.01284 89 db6a8df65d244abb05313f572da2221e ""
   "anhang.tex" 1795007072.01484 66 f62fb4be546cc404caa83a6900d97fed ""
   "imports.tex" 1795010907.53251 9908 53e1d206661fcfbf6022de3f9a6069fe ""
-  "mathcraft.aux" 1795013168.86145 6202 8b558496c52c2970a09cb7be326d827e "xelatex"
+  "mathcraft.aux" 1795013680.93653 6202 8b558496c52c2970a09cb7be326d827e "xelatex"
   "mathcraft.bbl" 1795010152.91591 2097 f81053c37f40972c6341296795e31d30 "biber mathcraft"
-  "mathcraft.out" 1795013168.86345 561 470efd97a0534d7f381a231a2071d2f2 "xelatex"
-  "mathcraft.run.xml" 1795013168.87184 2415 d0f5847b6002344411f0486db06c21cf "xelatex"
+  "mathcraft.out" 1795013680.93853 561 470efd97a0534d7f381a231a2071d2f2 "xelatex"
+  "mathcraft.run.xml" 1795013680.94517 2415 d0f5847b6002344411f0486db06c21cf "xelatex"
   "mathcraft.tex" 1795010861.96454 2961 cc50e7c276a1a843ab9dc74cfba63f0c ""
-  "mathcraft.toc" 1795013168.87184 334 b25a2ffb543827adb6f23ffda2449c2b "xelatex"
+  "mathcraft.toc" 1795013680.94517 334 b25a2ffb543827adb6f23ffda2449c2b "xelatex"
   "sections/conclusion.tex" 1795007072.02184 51 2e8159415f4932cd258741bcec8ec501 ""
   "sections/introduction.tex" 1795012598.70093 25652 20e7951ea613c2bea95c48317ff7fd8e ""
-  "sections/rendering.tex" 1795013159.53438 799 7a3e3a8f0525ef0a100cbfb857da01d6 ""
+  "sections/rendering.tex" 1795013670.5734 854 d274da9e1d919f5cee67980ee24d339c ""
   "titelmakros.tex" 1795007385.62121 2759 ee0bd138c0c808b0083a71be26e8bf6b ""
   (generated)
   "mathcraft.aux"

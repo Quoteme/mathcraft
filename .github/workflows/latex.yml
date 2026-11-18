@@ -35,9 +35,12 @@ jobs:
             # (JuliaMono and TeX Gyre Pagella ship with TeX Live).
             apt-get update
             apt-get install -y --no-install-recommends python3 fontconfig fonts-symbola
-            # Make the fonts shipped with TeX Live visible to XeTeX via fontconfig.
-            cp "$(kpsewhich -var-value TEXMFSYSVAR)/fonts/conf/texlive-fontconfig.conf" \
-              /etc/fonts/conf.d/09-texlive.conf
+            # Make the fonts shipped with TeX Live visible to XeTeX via fontconfig
+            # (the Docker image may already link this file, then nothing to do).
+            if [ ! -e /etc/fonts/conf.d/09-texlive.conf ]; then
+              cp "$(kpsewhich -var-value TEXMFSYSVAR)/fonts/conf/texlive-fontconfig.conf" \
+                /etc/fonts/conf.d/09-texlive.conf
+            fi
             fc-cache -f
             cd latex
             latexmk mathcraft.tex
