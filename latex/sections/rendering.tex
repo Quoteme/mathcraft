@@ -13,4 +13,110 @@ with it a velocity $e_v = \partial e_p / \partial t$, an acceleration
 $e_a = \partial^2 e_p / \partial t^2$ and a \emph{heading
 	direction} $e_d \in S^2$, which encodes where the entity looks.
 
+The rendering distance in classical Minecraft is given by some natural number
+$r \in \NN$. Given the chunk $C_i$ the player is in, it considers the open set
+\[
+	U = \bigcup_{\operatorname{dist}(i,j) \le r} C_j,
+\]
+where $\operatorname{dist} \colon \gamma \times \gamma \to \NN$ counts how far
+apart two nodes of the graph are, that is, the length of a shortest path
+between them, disregarding any nodes that do not correspond to chunks, such as
+those for faces. Thus two chunks are one step apart exactly when they share a
+common face. For the lattice $X$ from \cref{fig:chunk-lattice},
+$\operatorname{dist}$ is then just the taxicab metric on the chunk indices
+$(i/w, j/d, k/h) \in \ZZ^3$.
+
+We may however choose any open set, or subgraph, $U$ which contains the player
+for rendering, and we will call it the \emph{rendering set}.
+
+To model rendering, we will use the topos of trees
+$\toposoftrees \coloneqq \functorcat{\omega^{\mathrm{op}}}{\Set}$, which we
+have introduced and studied in \cite{happelToposTrees2026}. In particular,
+this topos allows us to model ray tracing naturally and in a safe manner.
+\todo[inline]{Possibly also add the topos for synthetic differential geometry here?}
+The general idea is that we construct a term $\rho$ of the coinductive stream
+type
+\[
+	\Stream(U) \cong U \times \later \Stream(U)
+\]
+in $\toposoftrees$, which starts at the player $e$ in $W(U)$ by setting
+\[
+	\restr{\rho}{0} = [\rho_0] \coloneqq [e_p],
+\]
+and which follows the geodesic spanned by $e_v$ until it collides with a block
+or an entity. We use here that each chunk $C_j \subseteq U$ is trivially
+diffeomorphic to $[0,w] \times [0,d] \times [0,h]$ via a chart
+$\varphi_j \colon C_j \to [0,w] \times [0,d] \times [0,h]$ (for the lattice
+$X$, simply the translation that moves the corner of $C_j$ to the origin), and
+that for each $v \in U$ we can find an appropriate subset of $\RR^3$ which it
+lies in, such that addition, differentiation and a canonical dot product are
+well defined. Write $v_0 \coloneqq e_v$ for the initial direction of the ray,
+and let
+\[
+	\lambda_{n+1} \coloneqq \inf \{\lambda > 0 \mid \rho_n + \lambda v_n
+	\text{ lies in a block or an entity}\} \in \RR_{\ge 0} \cup \{\infty\}
+\]
+be the distance (in units of $v_n$) to the next collision, so that
+$\rho_{n+1} = \rho_n + \lambda_{n+1} v_n$ is the point of collision. There, the
+ray is reflected and continues in the direction
+\[
+	v_{n+1} \coloneqq v_n - 2 \langle v_n, \nu_{n+1} \rangle \nu_{n+1},
+\]
+where $\nu_{n+1}$ is the unit normal of the surface that was hit, which follows
+from the law of reflection with respect to the tangent plane
+$t = \nu_{n+1}^{\perp}$.
+
+For blocks, colliding is easy, as the tangent plane $t$ is clear. Every face
+of a block is axis-aligned, so $\nu_{n+1} \in \{\pm e_1, \pm e_2, \pm e_3\}$, and
+the reflection simply flips the sign of one coordinate of $v_n$. Thus, when
+colliding with a block,
+\[
+	\restr{\rho}{n+1} = [\rho_0, \dots, \rho_n, \rho_n + \lambda_{n+1} v_n],
+	\qquad
+	v_{n+1} = v_n - 2 \langle v_n, \nu_{n+1} \rangle \nu_{n+1}.
+\]
+For entities, we would indeed need to know some additional information, such as
+the shape of the entity. For simplicity, we will just assume that every entity
+$f$ is a sphere of radius $s$ around its position $f_p$. The unit normal at the
+point of collision is then $\nu_{n+1} = (\rho_{n+1} - f_p) / s$, which gives,
+when colliding with an entity $f$,
+\[
+	\restr{\rho}{n+1} = [\rho_0, \dots, \rho_n, \rho_n + \lambda_{n+1} v_n],
+	\qquad
+	v_{n+1} = v_n - \frac{2}{s^2} \langle v_n, \rho_{n+1} - f_p \rangle (\rho_{n+1} - f_p).
+\]
+
+Finally, assume that the ray starting at $\rho_n$ in direction $v_n$ never
+collides with a block or an entity, or that it reaches the boundary
+$\partial U$ of the rendering set before doing so. In both cases we set
+$\lambda_{n+1} = \infty$, and the ray ends there, so we let the stream stay
+constant from then on,
+\[
+	\restr{\rho}{n+1} = [\rho_0, \dots, \rho_n, \rho_n],
+	\qquad
+	v_{n+1} = v_n.
+\]
+
+We may therefore generalize this procedure of ray tracing to a family of
+global elements in the topos of trees. Given a starting position $x \in U$ and
+a heading vector $v \in T_x U$, this yields
+\begin{align*}
+	\mathrm{ray}_{x,v}         & \colon 1 \to \Stream(U), \\
+	\mathrm{ray}_{x,v}         & \coloneqq [\rho_0, \rho_1, \dots],
+\end{align*}
+where $\rho$ is constructed as above, starting with $\rho_0 = x$ and
+$v_0 = v$.
+
+We can now consider the oriented plane of width $\mathrm{plane}_w$ and height
+$\mathrm{plane}_h$, spanned by orthogonal unit vectors $u, v \in T_{e_p} U$,
+given by
+\[
+	P \coloneqq \left\{ e_p + \exp(a u + b v) \in U \;\middle|\;
+	a \in \left[-\tfrac{\mathrm{plane}_w}{2}, \tfrac{\mathrm{plane}_w}{2}\right],\
+	b \in \left[-\tfrac{\mathrm{plane}_h}{2}, \tfrac{\mathrm{plane}_h}{2}\right]
+	\right\},
+\]
+where $\exp \colon (T_{e_p} U, +) \to (\RR^3, +)$ is the exponential map of
+Lie groups, using the identification of $U$ with subsets of $\RR^3$ from above.
+
 % TODO

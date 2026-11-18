@@ -90,7 +90,7 @@
 \ifthenelse{\equal{\biber}{true}}{
 	% only needed for biber
 	\usepackage{csquotes}
-	\usepackage[style=authoryear,natbib=true,backend=biber,mincitenames=1,maxcitenames=2,maxbibnames=99,uniquelist=false,dashed=false]{biblatex}
+	\usepackage[style=numeric,sorting=none,natbib=true,backend=biber,mincitenames=1,maxcitenames=2,maxbibnames=99,uniquelist=false]{biblatex}
 
 	% https://tex.stackexchange.com/a/334703/8850
 	\AtEveryBibitem{%
@@ -101,8 +101,8 @@
 		\clearlist{location}
 		\clearlist{address}
 
-		\ifentrytype{online}{}{% Remove url except for @online
-			\clearfield{url}
+		\ifentrytype{online}{}{% Remove url except for @online and @thesis
+			\ifentrytype{thesis}{}{\clearfield{url}}
 		}
 	}
 }
@@ -150,6 +150,7 @@
 
 % Mathematik / kategorientheoretische Notation und kommutative Diagramme
 \usepackage{amsmath}
+\usepackage{mathtools} % \coloneqq
 \usepackage{amssymb}
 \usepackage{amsthm}
 \usepackage{stmaryrd} % \llbracket, \rrbracket
