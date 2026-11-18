@@ -1,0 +1,23 @@
+# LaTeX / latexmk build output
+*.aux
+*.bbl
+*.bbl-SAVE-ERROR
+*.bcf
+*.bcf-SAVE-ERROR
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.pdf
+*.run.xml
+*.synctex.gz
+*.toc
+*.xdv
+*.lof
+*.lot
+_minted/
+_minted-*/
+
+# Python bytecode (tools/pythonpath)
+__pycache__/
