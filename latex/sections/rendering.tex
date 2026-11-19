@@ -1,8 +1,8 @@
 \section{Rendering a Mathcraft Sheaf}\label{sec:rendering}
 
 As we have established in \cref{sec:introduction}, Minecraft worlds with their
-blocks and entities can be represented as sheaves $W \in \functorcat{\gamma^{\mathrm{op}}}{\Set}$
-over a graph $\gamma$. The most natural next
+blocks and entities can be represented as sheaves $W \in \functorcat{\tau^{\mathrm{op}}}{\Set}$
+over a topological space $(V, \tau)$ as described before. The most natural next
 question is: how do we \emph{render} such a sheaf?
 
 % stick figures shared by the figures of this section
@@ -54,10 +54,10 @@ question is: how do we \emph{render} such a sheaf?
 		typically assigned a dedicated entity called the \emph{player}, and the user
 		has a \emph{rendering distance}. The player is given by a unique
 		$e \in \EntityID$ contained in the image of the entity sheaf $E$ of $W$, i.e.\
-		$e \in \operatorname{flatten} \im E(\gamma)$. We can find at least one chunk
-		$C_{i,j,k}$ such that $e \in E(C_{i,j,k})$, and then $e_p = (x,y,z)$, where
+		$e \in \operatorname{flatten} \im E(V)$. We can find at least one chunk
+		$C_{i,j,k}^{w,d,h}$ such that $e \in E(C_{i,j,k}^{w,d,h})$, and then $e_p = (x,y,z)$, where
 		$(x,y,z) \in [0,w) \times [0,d) \times [0,h)$ is uniquely determined by
-		$e \in E(C_{i,j,k})(x,y,z)$. By its $\EntityID$, we wish to associate
+		$e \in E(C_{i,j,k}^{w,d,h})(x,y,z)$. By its $\EntityID$, we wish to associate
 		with it a velocity $e_v = \partial e_p / \partial t$, an acceleration
 		$e_a = \partial^2 e_p / \partial t^2$, a \emph{heading
 			direction} $e_d \in S^2$, which encodes in what direction the entity looks,
@@ -84,11 +84,11 @@ question is: how do we \emph{render} such a sheaf?
 			(0,0,2*\h) -- (0,\d,2*\h) -- (2*\w,\d,2*\h) -- (2*\w,0,2*\h)
 			(2*\w,0,0) -- (2*\w,\d,0) -- (2*\w,\d,2*\h);
 			% chunk names
-			\node[below] at (0.5*\w,0,0) {$C_{i-w,j,k}$};
-			\node[below] at (1.5*\w,0,0) {$C_{i,j,k}$};
-			\node[fill=white, inner sep=1pt] at (0.5*\w,0,1.5*\h) {$C_{i-w,j,k+h}$};
-			\node[fill=white, inner sep=1pt] at (1.5*\w,0,1.5*\h) {$C_{i,j,k+h}$};
-			% the player e at e_p = (x,y,z), measured from the corner of C_{i,j,k}
+			\node[below] at (0.5*\w,0,0) {$C_{i-w,j,k}^{w,d,h}$};
+			\node[below] at (1.5*\w,0,0) {$C_{i,j,k}^{w,d,h}$};
+			\node[fill=white, inner sep=1pt] at (0.5*\w,0,1.5*\h) {$C_{i-w,j,k+h}^{w,d,h}$};
+			\node[fill=white, inner sep=1pt] at (1.5*\w,0,1.5*\h) {$C_{i,j,k+h}^{w,d,h}$};
+			% the player e at e_p = (x,y,z), measured from the corner of C_{i,j,k}^{w,d,h}
 			\def\px{0.7}\def\py{0.8}\def\pz{0.6}
 			\coordinate (player) at (\w+\px,\py,\pz);
 			\begin{scope}[line width=0.5pt, -{Stealth[length=4pt]}]
@@ -96,7 +96,7 @@ question is: how do we \emph{render} such a sheaf?
 				\draw (\w+\px,0,0) -- node[above left, inner sep=0.5pt] {$y$} (\w+\px,\py,0);
 				\draw (\w+\px,\py,0) -- node[right, inner sep=1.5pt] {$z$} (player);
 			\end{scope}
-			% two zombies at another point of C_{i,j,k}, one zombie in C_{i-w,j,k}
+			% two zombies at another point of C_{i,j,k}^{w,d,h}, one zombie in C_{i-w,j,k}^{w,d,h}
 			\coordinate (zombies) at (\w+1.5,1.1,0.7);
 			\coordinate (zombie) at (0.8,0.9,0.7);
 			\draw[hiddenline] (zombies) -- (\w+1.5,1.1,0) (zombie) -- (0.8,0.9,0);
@@ -157,7 +157,7 @@ $r \in \NN$. Given the chunk $C_i$ the player is in, it considers the open set
 		$(i/w, j/d, k/h) \in \ZZ^3$.
 
 		\medskip
-		We may however choose any open set, or subgraph, $U$ for rendering, and we
+		We may however choose any convex open set $U$ for rendering, and we
 		will call it the \emph{rendering set}.
 	\end{minipage}%
 	\hfill
@@ -230,24 +230,24 @@ type
 \[
 	\Stream(U) \cong U \times \later \Stream(U)
 \]
-in $\toposoftrees$, which starts at some point $p$ in a chunk $C_j \subseteq U$
+in $\toposoftrees$ which approximates $\rho' \colon \Stream(V)$, which starts at
+some point $p$ in a chunk $C_j \subseteq U$
 by setting
 \[
-	\restr{\rho}{0} = [\rho_0] \coloneqq [p],
+	\restr{\rho'}{0} = [\rho'_0] \coloneqq [p],
 \]
 and which follows a geodesic spanned by a tangent vector $v_0 \in T_p C_j$
 until it collides with a block or an entity. Here
-$\exp \colon (T_p C_j, +) \to (\RR^3, +)$ is the exponential map of Lie groups
-\cite{happelExponentialMapLie2026}. Using $\exp$, we can define
-\[
-	\lambda_{n+1} \coloneqq \inf \{\lambda > 0 \mid \rho_n + \exp(\lambda v_n)
-	\text{ lies in a block or an entity}\} \in \RR_{\ge 0} \cup \{\infty\}
-\]
+$\exp_p \colon T_p V \to V$ is the exponential map on the $3$-manifold $V$,
+which we have studied for Lie groups and algebras before in
+\cite{happelExponentialMapLie2026}. Using $\exp_p$, we can define
+\begin{equation}\label{eq:collision-distance}
+	\lambda_{n+1} \coloneqq \inf \{\lambda > 0 \mid \exp_{\rho'_n}(\lambda v_n)
+	\text{ lies in a block or an entity}\} \in \RR_{\ge 0}
+\end{equation}
 as the distance (in units of $v_n$) to the next collision, so that
-$\rho_{n+1} = \rho_n + \exp(\lambda_{n+1} v_n)$ is the point of collision.
-(The addition is well defined, as $U$ is covered by chunks $C_j$, which are each
-diffeomorphic to $[0,w] \times [0,d] \times [0,h] \subseteq \RR^3$, and as such
-can be identified with subsets of $\RR^3$.) There, the ray is reflected and continues in the direction
+$\rho'_{n+1} = \exp_{\rho'_n}(\lambda_{n+1} v_n)$ is the point of collision.
+There, the ray is reflected and continues in the direction
 \[
 	v_{n+1} \coloneqq v_n - 2 \langle v_n, \nu_{n+1} \rangle \nu_{n+1},
 \]
@@ -260,58 +260,60 @@ of a block is axis-aligned, so $\nu_{n+1} \in \{\pm e_1, \pm e_2, \pm e_3\}$, an
 the reflection simply flips the sign of one coordinate of $v_n$. Thus, when
 colliding with a block,
 \[
-	\restr{\rho}{n+1} = [\rho_0, \dots, \rho_n, \rho_n + \exp(\lambda_{n+1} v_n)],
+	\restr{\rho'}{n+1} = [\rho'_0, \dots, \rho'_n, \exp_{\rho'_n}(\lambda_{n+1} v_n)],
 	\qquad
 	v_{n+1} = v_n - 2 \langle v_n, \nu_{n+1} \rangle \nu_{n+1}.
 \]
 For entities, we would indeed need to know some additional information, such as
 the shape of the entity. For simplicity, we will just assume that every entity
 $f$ is a sphere of radius $s$ around its position $f_p$. The unit normal at the
-point of collision is then $\nu_{n+1} = (\rho_{n+1} - f_p) / s$, which gives,
+point of collision is then $\nu_{n+1} = (\rho'_{n+1} - f_p) / s$, which gives,
 when colliding with an entity $f$,
 \[
-	\restr{\rho}{n+1} = [\rho_0, \dots, \rho_n, \rho_n + \exp(\lambda_{n+1} v_n)],
+	\restr{\rho'}{n+1} = [\rho'_0, \dots, \rho'_n, \exp_{\rho'_n}(\lambda_{n+1} v_n)],
 	\qquad
-	v_{n+1} = v_n - \frac{2}{s^2} \langle v_n, \rho_{n+1} - f_p \rangle (\rho_{n+1} - f_p).
+	v_{n+1} = v_n - \frac{2}{s^2} \langle v_n, \rho'_{n+1} - f_p \rangle (\rho'_{n+1} - f_p).
 \]
 
-Finally, assume that the ray starting at $\rho_n$ in direction $v_n$ never
-collides with a block or an entity, or that it reaches the boundary
-$\partial U$ of the rendering set before doing so. In both cases we set
-$\lambda_{n+1} = \infty$, and the ray ends there, so we let the stream stay
-constant from then on,
+Finally, assume that the ray starting at $\rho'_n$ in direction $v_n$ never
+collides with a block or an entity. Then we set $\lambda_{n+1} = \infty$, and
+the ray ends there, so we let the stream stay constant from then on,
 \[
-	\restr{\rho}{n+1} = [\rho_0, \dots, \rho_n, \rho_n],
+	\restr{\rho'}{n+1} = [\rho'_0, \dots, \rho'_n, \rho'_n],
 	\qquad
 	v_{n+1} = v_n.
 \]
+By considering the submanifold $U$ instead of $V$, we then get the induced ray
+tracing on the rendering set.
 
 We may therefore generalize this procedure of ray tracing to a family of
-global elements in the topos of trees. Given a starting position $x \in U$ and
-a heading vector $v \in T_x U$, this yields
+global elements in the topos of trees. Given a starting position $p \in U$ and
+a heading vector $v \in T_p U$, this yields
 \begin{align*}
-	\mathrm{ray}_{x,v}         & \colon 1 \to \Stream(U), \\
-	\mathrm{ray}_{x,v}         & \coloneqq [\rho_0, \rho_1, \dots],
+	\mathrm{ray}_{p,v} & \colon 1 \to \Stream(U), \\
+	\mathrm{ray}_{p,v} & \coloneqq \left[p,\
+		\exp_{\mathrm{ray}_{p,v}^{(0)}}(\lambda_1 v_0),\
+		\exp_{\mathrm{ray}_{p,v}^{(1)}}(\lambda_2 v_1),\
+	\dots\right],
 \end{align*}
-where $\rho$ is constructed as above, starting with $\rho_0 = x$ and
-$v_0 = v$.
+where $\mathrm{ray}_{p,v}^{(n)}$ denotes the $n$-th entry of
+$\mathrm{ray}_{p,v}$, and $\lambda_{n+1}$ and $v_n$ are constructed as above,
+starting with $v_0 = v$.
 
 We can now consider the oriented plane of width $\mathrm{plane}_w$ and height
-$\mathrm{plane}_h$, spanned by orthogonal unit vectors $u, v \in T_x U$,
-given by
+$\mathrm{plane}_h$ at a point $q \in U$, spanned by unit vectors
+$u, v \in S^2 \subseteq T_q U$, given by
 \[
-	\Pi \coloneqq \left\{ x + \exp(a u + b v) \in U \;\middle|\;
+	\Pi_{q,u,v} \coloneqq \left\{ \exp_q(a u + b v) \in U \;\middle|\;
 	a \in \left[-\tfrac{\mathrm{plane}_w}{2}, \tfrac{\mathrm{plane}_w}{2}\right],\
 	b \in \left[-\tfrac{\mathrm{plane}_h}{2}, \tfrac{\mathrm{plane}_h}{2}\right]
-	\right\},
+	\right\}.
 \]
-where $\exp \colon (T_x U, +) \to (\RR^3, +)$ is the exponential map from
-above.
-We can then set $x = e_p + \delta$ for some offset $\delta$. By choosing another
-point $y = e_p + \delta'$, we can then consider all rays from $y$ through the
-points of $\Pi$. This gives us a natural choice of heading vector for
-$\mathrm{ray}_{e_p + \delta', v}$: for every point $q \in \Pi$, we take
-$v = q - y$, the direction from $y$ towards $q$.
+We can then set $p = \exp_{e_p}(e_h y)$, where $y \coloneqq (0,1,0) \in T_{e_p} U$
+points straight up, and $q = \exp_p(e_d)$. We can then consider all rays
+$\mathrm{ray}_{p,v'}$ for $v'$ where $\exp_p(\lambda v')$ passes through
+$\Pi_{q,u,v}$, for $u$ and $v$ in $S^2$ such that $e_d$, $u$ and $v$ span
+$\RR^3$.
 
 \begin{figure}[ht]
 	\centering
@@ -368,7 +370,7 @@ $v = q - y$, the direction from $y$ towards $q$.
 				\draw[chunkstub] (\X,\j*\d,0) -- (\X,\j*\d,-0.45);
 			}
 		\draw[chunkline] (\X,0,0) -- (\X,\Y,0) (\X,0,\h) -- (\X,\Y,\h);
-		% hidden edges of the distinguished chunk C_{w,0,h}
+		% hidden edges of the distinguished chunk C_{w,0,h}^{w,d,h}
 		\draw[chunkline] (\w,\d,\h) -- (2*\w,\d,\h);
 		\draw[chunkline] (\w,0,\h) -- (\w,\d,\h) -- (\w,\d,2*\h);
 		\draw[chunkline] (2*\w,0,\h) -- (2*\w,\d,\h) -- (2*\w,\d,2*\h);
@@ -380,66 +382,322 @@ $v = q - y$, the direction from $y$ towards $q$.
 		\draw[{Bar[width=4pt]}-{Bar[width=4pt]}, line width=0.4pt]
 		(-0.85,0,0) -- node[fill=white, inner sep=1.5pt] {$h$} (-0.85,0,\h);
 	}
-	% voxel coordinates inside C_{w,0,h}: 5 x 5 x 6 cubes of side 0.2
+	% voxel coordinates inside C_{w,0,h}^{w,d,h}: 5 x 5 x 6 cubes of side 0.2
 	\tikzset{inchunk/.style={shift={(1.1,0,1.25+0.025)}, scale=0.2}}
-	% the player at e_p = (2.5, 2.5, 2) in voxel coordinates of C_{w,0,h}
-	% (5 x 5 x 6 cubes of side 0.2), and the plane Pi through e_p
-	\newcommand{\playerwithplane}[2]{%
-		\coordinate (ep) at (2.5,2.5,2);
-		\fill[pattern={Dots[distance=#1, radius=0.3pt]}]
-		(2.5,1,0.5) -- (2.5,4,0.5) -- (2.5,4,3.5) -- (2.5,1,3.5) -- cycle;
-		\draw[line width=0.5pt]
-		(2.5,1,0.5) -- (2.5,4,0.5) -- (2.5,4,3.5) -- (2.5,1,3.5) -- cycle;
-		#2
+	% the player standing at e_p = (1.2, 2.5, 2) in voxel coordinates of
+	% C_{w,0,h}^{w,d,h} (5 x 5 x 6 cubes of side 0.2), with the camera p at the
+	% centre of the head, and the plane Pi_{q,u,v} in front of the player,
+	% based at q = (3.9, 2.5, 3.67). #1 is the dot distance of the plane's
+	% pattern, #2 is drawn before and #3 after the plane.
+	\newcommand{\playerwithplane}[3]{%
+		\coordinate (ep) at (1.2,2.5,2);
+		\coordinate (p) at (1.2,2.5,3.67);
+		\coordinate (q) at (3.9,2.5,3.67);
 		\begin{scope}[shift={(ep)}, line width=0.5pt]
 			\draw (-0.3cm,0cm) -- (0cm,0.8cm) -- (0.3cm,0cm);
 			\draw (0cm,0.8cm) -- (0cm,1.45cm);
 			\draw (-0.45cm,0.9cm) -- (0cm,1.3cm) -- (0.45cm,0.9cm);
 			\draw[preaction={fill=white}] (0cm,1.67cm) circle[radius=0.22cm];
-		\end{scope}}
+		\end{scope}
+		#2
+		\fill[pattern={Dots[distance=#1, radius=0.3pt]}]
+		(3.9,1,2.17) -- (3.9,4,2.17) -- (3.9,4,5.17) -- (3.9,1,5.17) -- cycle;
+		\draw[line width=0.5pt]
+		(3.9,1,2.17) -- (3.9,4,2.17) -- (3.9,4,5.17) -- (3.9,1,5.17) -- cycle;
+		#3}
+	% two rays from p through the points (3.9, 3.6, 4.7) and (3.9, 1.6, 2.7) of
+	% the plane: the part up to the plane (#1 = 1) or beyond it (#1 = 2)
+	\tikzset{ray/.style={line width=0.45pt}}
+	\newcommand{\renderrays}[1]{%
+		\ifnum#1=1
+			\draw[ray] (p) -- (3.9,3.6,4.7);
+			\draw[ray] (p) -- (3.9,1.6,2.7);
+		\else
+			\draw[ray, -{Stealth[length=3pt, width=2.5pt]}] (3.9,3.6,4.7) -- (4.8,3.97,5.04);
+			\draw[ray, -{Stealth[length=3pt, width=2.5pt]}] (3.9,1.6,2.7) -- (4.8,1.3,2.38);
+			\node[circle, fill, inner sep=0.7pt] at (3.9,3.6,4.7) {};
+			\node[circle, fill, inner sep=0.7pt] at (3.9,1.6,2.7) {};
+		\fi}
 	\begin{subfigure}[b]{0.58\textwidth}
 		\centering
 		\begin{tikzpicture}[sheafpic]
 			\chunkgrid
 			\begin{scope}[inchunk]
-				\playerwithplane{1.2pt}{}
+				\playerwithplane{1.2pt}{}{}
 			\end{scope}
 		\end{tikzpicture}
-		\caption{The player in the chunk $C_{w,0,h}$.}
+		\caption{The player in the chunk $C_{w,0,h}^{w,d,h}$.}
 		\label{fig:render-plane-overview}
 	\end{subfigure}%
 	\hfill
 	\begin{subfigure}[b]{0.4\textwidth}
 		\centering
 		\begin{tikzpicture}[sheafpic, scale=3.2]
-			% the chunk C_{w,0,h}, outlined by dashed lines
+			% the chunk C_{w,0,h}^{w,d,h}, outlined by dashed lines
 			\draw[chunkline] (0,0,0) -- (1,0,0) -- (1,0,1.25) -- (0,0,1.25) -- cycle;
 			\draw[chunkline] (1,0,0) -- (1,1,0) -- (1,1,1.25) -- (1,0,1.25);
 			\draw[chunkline] (0,0,1.25) -- (0,1,1.25) -- (1,1,1.25);
 			\draw[chunkline] (0,0,0) -- (0,1,0) -- (1,1,0);
 			\draw[chunkline] (0,1,0) -- (0,1,1.25);
-			\node[font=\small, anchor=north west, inner sep=2pt] at (0,0,1.25) {$C_{w,0,h}$};
+			\node[font=\small, anchor=north west, inner sep=2pt] at (0,0,1.25) {$C_{w,0,h}^{w,d,h}$};
 			\begin{scope}[shift={(0.1,0,0.025)}, scale=0.2]
 				\playerwithplane{1.6pt}{%
-					% tangent vectors at e_p, drawn behind the player
-					\draw[-{Stealth[length=4pt, width=3pt]}, line width=0.6pt] (ep) -- ++(2,0,0)
-					node[font=\small, anchor=west, inner sep=1.5pt] {$e_d$};
-					\draw[-{Stealth[length=4pt, width=3pt]}, line width=0.6pt] (ep) -- ++(0,1.5,0)
-					node[font=\small, anchor=south west, inner sep=1pt] {$u$};
-					\draw[-{Stealth[length=4pt, width=3pt]}, line width=0.6pt] (ep) -- ++(0,0,2.6)
-					node[font=\small, anchor=south, inner sep=1.5pt] {$v$};}
-				\node[font=\small, anchor=south east, inner sep=1pt] at (2.5,1,3.5) {$\Pi$};
-				\fill (ep) circle[radius=0.07];
-				\node[font=\small, anchor=north west, fill=white, inner sep=1pt, xshift=2pt, yshift=-2pt] at (ep) {$x = e_p$};
+					\renderrays{1}
+					% the heading direction e_d, from p to q
+					\draw[-{Stealth[length=4pt, width=3pt]}, line width=0.6pt] (p) -- node[font=\small, anchor=north, inner sep=1.5pt, pos=0.4] {$e_d$} (q);
+				}{%
+					\renderrays{2}
+					% the vectors u and v spanning the plane at q
+					\draw[-{Stealth[length=4pt, width=3pt]}, line width=0.6pt] (q) -- ++(0,1,0)
+					node[font=\small, anchor=west, inner sep=1pt] {$u$};
+					\draw[-{Stealth[length=4pt, width=3pt]}, line width=0.6pt] (q) -- ++(0,0,1)
+					node[font=\small, anchor=east, inner sep=1.5pt] {$v$};
+					\node[font=\small, anchor=south east, inner sep=1pt] at (3.9,1,5.17) {$\Pi_{q,u,v}$};
+					\node[circle, fill, inner sep=0.9pt] at (q) {};
+					\node[font=\small, anchor=north east, inner sep=1pt] at (q) {$q$};
+				}
+				\node[circle, fill, inner sep=0.9pt] at (p) {};
+				\node[font=\small, anchor=east, inner sep=1pt, xshift=-0.24cm] at (p) {$p$};
+				\node[circle, fill, inner sep=0.9pt] at (ep) {};
+				\node[font=\small, anchor=north, inner sep=1pt, yshift=-3pt] at (ep) {$e_p$};
 			\end{scope}
 		\end{tikzpicture}
-		\caption{Zoomed into $C_{w,0,h}$.}
+		\caption{Zoomed into $C_{w,0,h}^{w,d,h}$.}
 		\label{fig:render-plane-zoom}
 	\end{subfigure}
-	\caption{The plane $\Pi$ at the point $x$, here with $\delta = 0$, so that $x = e_p$ is the position of the player. It is spanned by the
-		orthogonal unit vectors $u$ and $v$, here chosen orthogonal to the heading
-		direction $e_d$.}
+	\caption{The player stands at $e_p$, and the rays start at the centre $p$ of
+		its head. The plane $\Pi_{q,u,v}$ is based at $q = \exp_p(e_d)$ in front of
+		the player and spanned by the unit vectors $u$ and $v$, here chosen
+		orthogonal to the heading direction $e_d$. Two rays $\mathrm{ray}_{p,v'}$
+		pass from $p$ through $\Pi_{q,u,v}$.}
 	\label{fig:render-plane}
 \end{figure}
+
+Obviously, we can let the Lie group $\mathrm{SO}(3)$ act on $e_d \in S^2$,
+which corresponds to spinning the camera. More generally, given a mouse placed
+on a table, which we model using a point $m \in \RR^2$, we can consider the
+exponential map $\exp_{e_d} \colon T_{e_d} S^2 \cong \RR^2 \to S^2$, which can
+give us the direction $\exp_{e_d}(m)$ the player looks at.
+
+Now, a typical render pass would look like \cref{fig:render-pass}.
+
+\begin{figure}[ht]
+	\centering
+	% the scene of Fig.~\ref{fig:nether-portal}
+	\tikzset{
+		portalpic/.style={
+				x={(1.0cm,0cm)}, y={(0.55cm,0.38cm)}, z={(0cm,1.0cm)},
+				scale=1.55, line join=round, line cap=round},
+		chunkline/.style={line width=0.4pt, dash pattern=on 2pt off 1.5pt},
+		chunkstub/.style={line width=0.3pt, dash pattern=on 0.8pt off 1.6pt},
+		vox/.style={line width=0.3pt, preaction={fill=white}},
+		% ordered "dithering": black and white only
+		dither sparse/.style={pattern={Dots[distance=2.2pt, radius=0.28pt]}},
+		dither mid/.style={pattern={Dots[distance=1.3pt, radius=0.3pt]}},
+		dither lines/.style={pattern={Lines[angle=45, distance=1.3pt, line width=0.3pt]}},
+		dither vert/.style={pattern={Lines[angle=90, distance=1.1pt, line width=0.3pt]}},
+		dither horiz/.style={pattern={Lines[angle=0, distance=1.1pt, line width=0.3pt]}},
+		dither rack/.style={pattern={Lines[angle=-45, distance=1.2pt, line width=0.3pt]}},
+		dither dark/.style={pattern={Hatch[angle=45, distance=1.1pt, line width=0.3pt]}},
+		ray/.style={line width=0.6pt},
+		hit/.style={circle, fill, inner sep=0.8pt},
+		hidden ray/.style={line width=0.6pt, dash pattern=on 1.5pt off 1.2pt},
+		dither swirl/.style={pattern={Lines[angle=60, distance=1.5pt, line width=0.3pt]}},
+		% obsidian: black with white speckles and white seams
+		obsidian/.style={line width=0.3pt, draw=white, fill=black,
+				postaction={pattern={Dots[distance=#1, radius=0.3pt]}, pattern color=white}},
+		cellglyph/.style={line width=0.45pt, preaction={fill=white}},
+		wormhole/.style={line width=0.7pt},
+	}
+	% a unit cube at voxel (#1,#2,#3), faces styled #4 (top), #5 (front), #6 (right)
+	\newcommand{\vox}[6]{%
+		\draw[vox,#5] (#1,#2,#3) -- ++(1,0,0) -- ++(0,0,1) -- ++(-1,0,0) -- cycle;
+		\draw[vox,#6] ({#1+1},#2,#3) -- ++(0,1,0) -- ++(0,0,1) -- ++(0,-1,0) -- cycle;
+		\draw[vox,#4] (#1,#2,{#3+1}) -- ++(1,0,0) -- ++(0,1,0) -- ++(-1,0,0) -- cycle;}
+	\newcommand{\dirt}[3]{\vox{#1}{#2}{#3}{dither sparse}{dither mid}{dither dark}}
+	\newcommand{\grass}[3]{\vox{#1}{#2}{#3}{dither sparse}{dither mid}{dither dark}}
+	\newcommand{\wood}[3]{\vox{#1}{#2}{#3}{dither mid}{dither vert}{dither dark}}
+	\newcommand{\leaves}[3]{\vox{#1}{#2}{#3}{dither sparse}{dither lines}{dither dark}}
+	\newcommand{\rack}[3]{\vox{#1}{#2}{#3}{dither mid}{dither rack}{dither dark}}
+	\newcommand{\lava}[3]{\vox{#1}{#2}{#3}{dither horiz}{dither horiz}{dither dark}}
+	\newcommand{\obs}[3]{%
+		\draw[obsidian=1.6pt] (#1,#2,#3) -- ++(1,0,0) -- ++(0,0,1) -- ++(-1,0,0) -- cycle;
+		\draw[obsidian=2.4pt] ({#1+1},#2,#3) -- ++(0,1,0) -- ++(0,0,1) -- ++(0,-1,0) -- cycle;
+		\draw[obsidian=1.1pt] (#1,#2,{#3+1}) -- ++(1,0,0) -- ++(0,1,0) -- ++(-1,0,0) -- cycle;}
+	% the portal itself is a flat pane in the front plane of the frame
+	\newcommand{\portal}[3]{%
+		\fill[white] (#1,#2,#3) -- ++(1,0,0) -- ++(0,0,1) -- ++(-1,0,0) -- cycle;
+		\fill[dither swirl] (#1,#2,#3) -- ++(1,0,0) -- ++(0,0,1) -- ++(-1,0,0) -- cycle;}
+	\newcommand{\chest}[3]{%
+		\begin{scope}[shift={({#1+0.1},{#2+0.1},#3)}, scale=0.8]
+			\vox{0}{0}{0}{}{}{dither sparse}
+			\draw[line width=0.3pt] (0,0,0.62) -- (1,0,0.62) -- (1,1,0.62);
+			\fill (0.42,0,0.48) rectangle (0.58,0,0.72);
+		\end{scope}}
+	% dashed outlines of a 2 x 2 x 1 block of chunks, raised by #1
+	\newcommand{\chunkblock}[1]{%
+		\def\h{1.25}
+		\foreach \i in {0,1,2} {
+				\draw[chunkline] (\i,0,#1) -- (\i,0,#1+\h) -- (\i,2,#1+\h);
+				\draw[chunkstub] (\i,0,#1) -- (\i,0,#1-0.3);
+				\draw[chunkstub] (\i,2,#1+\h) -- (\i,2.4,#1+\h);
+			}
+		\foreach \k in {0,1} {
+				\draw[chunkline] (0,0,#1+\k*\h) -- (2,0,#1+\k*\h);
+				\draw[chunkstub] (0,0,#1+\k*\h) -- (-0.3,0,#1+\k*\h);
+				\draw[chunkstub] (2,2,#1+\k*\h) -- (2,2.4,#1+\k*\h);
+			}
+		\foreach \j in {0,1,2} {
+				\draw[chunkline] (0,\j,#1+\h) -- (2,\j,#1+\h) -- (2,\j,#1);
+				\draw[chunkstub] (0,\j,#1+\h) -- (-0.3,\j,#1+\h);
+				\draw[chunkstub] (2,\j,#1) -- (2.4,\j,#1);
+			}
+		\draw[chunkline] (2,0,#1) -- (2,2,#1);
+		% hidden edges
+		\draw[chunkline] (0,0,#1) -- (0,2,#1) -- (2,2,#1);
+		\draw[chunkline] (0,2,#1) -- (0,2,#1+\h);
+		\draw[chunkline] (1,0,#1) -- (1,2,#1) -- (1,2,#1+\h);
+		\draw[chunkline] (0,1,#1) -- (2,1,#1);
+		\draw[chunkline] (0,1,#1) -- (0,1,#1+\h);
+		\draw[chunkline] (1,1,#1) -- (1,1,#1+\h);
+	}
+	% voxels of side 0.2, shifted half a voxel to the right within each chunk
+	\tikzset{voxels/.style={shift={(0.1,0,#1+0.025)}, scale=0.2}}
+	\begin{tikzpicture}[portalpic, scale=2]
+		% the Nether
+		\chunkblock{0}
+		\begin{scope}[voxels=0]
+			\rack{5}{8}{0}\rack{6}{8}{0}\rack{7}{8}{0}\rack{8}{8}{0}\rack{1}{7}{2}
+				\rack{1}{7}{3}\rack{2}{7}{0}\rack{2}{7}{1}\rack{5}{7}{0}\lava{6}{7}{0}
+				\lava{7}{7}{0}\rack{8}{7}{0}\rack{1}{6}{0}\rack{1}{6}{1}\rack{2}{6}{0}
+				\rack{2}{6}{1}\rack{5}{6}{0}\lava{6}{6}{0}\lava{7}{6}{0}\rack{8}{6}{0}
+				\rack{5}{5}{0}\rack{6}{5}{0}\rack{7}{5}{0}\rack{8}{5}{0}\rack{5}{3}{0}
+				\rack{6}{3}{1}\rack{7}{3}{2}\rack{8}{3}{0}\rack{8}{3}{1}\rack{8}{3}{2}
+				\rack{8}{3}{3}\rack{0}{2}{0}\rack{1}{2}{0}\rack{2}{2}{0}\rack{3}{2}{0}
+				\rack{5}{2}{0}\rack{6}{2}{1}\rack{7}{2}{2}\rack{8}{2}{0}\rack{8}{2}{1}
+				\rack{8}{2}{2}\obs{0}{1}{1}\obs{0}{1}{2}\obs{0}{1}{3}\obs{0}{1}{4}
+				\obs{0}{1}{5}\obs{1}{1}{1}\portal{1}{1}{2}\portal{1}{1}{3}
+				\portal{1}{1}{4}\obs{1}{1}{5}\obs{2}{1}{1}\portal{2}{1}{2}
+				\portal{2}{1}{3}\portal{2}{1}{4}\obs{2}{1}{5}\rack{3}{1}{0}
+				\obs{3}{1}{1}\obs{3}{1}{2}\obs{3}{1}{3}\obs{3}{1}{4}\obs{3}{1}{5}
+				\rack{5}{1}{0}\rack{6}{1}{1}\rack{7}{1}{1}\rack{8}{1}{0}\rack{8}{1}{1}
+				\rack{0}{0}{0}\rack{1}{0}{0}\rack{2}{0}{0}\rack{3}{0}{0}\rack{5}{0}{0}
+				\rack{6}{0}{0}\rack{7}{0}{0}\rack{8}{0}{0}
+		\end{scope}
+		% the Overworld
+		\chunkblock{2.4}
+		\begin{scope}[voxels=2.4]
+			\grass{5}{8}{0}\grass{6}{8}{1}\grass{7}{8}{0}\grass{0}{7}{0}
+				\grass{1}{7}{1}\grass{2}{7}{1}\grass{3}{7}{0}\grass{5}{7}{0}
+				\grass{6}{7}{0}\grass{7}{7}{0}\grass{0}{6}{0}\grass{1}{6}{1}
+				\grass{2}{6}{1}\grass{3}{6}{0}\grass{5}{6}{0}\grass{6}{6}{0}
+				\grass{7}{6}{0}\grass{0}{5}{0}\grass{1}{5}{0}\grass{2}{5}{0}
+				\grass{3}{5}{0}\leaves{5}{4}{4}\leaves{6}{4}{5}\leaves{7}{4}{4}
+				\grass{5}{3}{1}\leaves{5}{3}{5}\dirt{6}{3}{0}\grass{6}{3}{1}
+				\wood{6}{3}{2}\wood{6}{3}{3}\leaves{6}{3}{5}\leaves{7}{3}{4}
+				\leaves{7}{3}{5}\grass{0}{2}{0}\grass{1}{2}{0}\grass{2}{2}{0}
+				\grass{3}{2}{0}\grass{5}{2}{1}\leaves{5}{2}{4}\dirt{6}{2}{0}
+				\grass{6}{2}{1}\leaves{6}{2}{4}\leaves{6}{2}{5}\leaves{7}{2}{4}
+				\obs{0}{1}{1}\obs{0}{1}{2}\obs{0}{1}{3}\obs{0}{1}{4}\obs{0}{1}{5}
+				\obs{1}{1}{1}\portal{1}{1}{2}\portal{1}{1}{3}\portal{1}{1}{4}
+				\obs{1}{1}{5}\obs{2}{1}{1}\portal{2}{1}{2}\portal{2}{1}{3}
+				\portal{2}{1}{4}\obs{2}{1}{5}\grass{3}{1}{0}\obs{3}{1}{1}\obs{3}{1}{2}
+				\obs{3}{1}{3}\obs{3}{1}{4}\obs{3}{1}{5}\grass{5}{1}{1}\grass{6}{1}{1}
+				\grass{7}{1}{1}\dirt{8}{1}{0}\grass{8}{1}{1}\grass{0}{0}{0}
+				\grass{1}{0}{0}\grass{2}{0}{0}\grass{3}{0}{0}\dirt{5}{0}{0}
+				\grass{5}{0}{1}\dirt{6}{0}{0}\grass{6}{0}{1}\dirt{7}{0}{0}
+				\grass{7}{0}{1}\dirt{8}{0}{0}\grass{8}{0}{1}\chest{8}{0}{2}
+		\end{scope}
+		% the two portals are glued along a common face
+		\draw[wormhole] (0.5,0.2,3.125+0.025) to[out=180, in=90] (-0.75,0.2,1.875);
+		\draw[wormhole] (-0.75,0.2,1.875) to[out=-90, in=180] (0.5,0.2,0.725+0.025);
+		\draw[cellglyph] (-0.75,0.1,1.775) -- ++(0,0.2,0) -- ++(0,0,0.2) -- ++(0,-0.2,0) -- cycle;
+		\node[anchor=west, font=\small\scshape] at (2.55,1,3.0) {Overworld};
+		\node[anchor=west, font=\small\scshape] at (2.55,1,0.6) {Nether};
+		% the player in the Overworld, standing at e_p = (2.6, 5.7, 1) with the
+		% camera p = (2.6, 5.7, 2.65) at the centre of its head, looking towards
+		% the trunk of the tree, with the plane Pi_{q,u,v} in front of its face
+		\begin{scope}[voxels=2.4]
+			\pic[transform shape, scale=1.9] at (2.6,5.7,1) {person};
+			\fill[pattern={Dots[distance=1.2pt, radius=0.3pt]}]
+			(3.18,4.88,2.28) -- (3.60,5.68,2.28) -- (3.60,5.68,3.18) -- (3.18,4.88,3.18) -- cycle;
+			\draw[line width=0.45pt]
+			(3.18,4.88,2.28) -- (3.60,5.68,2.28) -- (3.60,5.68,3.18) -- (3.18,4.88,3.18) -- cycle;
+			% the ray: reflected at the face x = 6 of the trunk, then entering
+			% the portal through its back face y = 2, hidden behind the frame
+			\draw[ray] (2.6,5.7,2.65) -- (6,3.9,3) -- (3.6,2.63,3.25);
+			\draw[hidden ray] (3.6,2.63,3.25) -- (2.41,2,3.37);
+			\node[hit] at (2.6,5.7,2.65) {};
+			\node[hit] at (6,3.9,3) {};
+			\node[font=\small, anchor=east, fill=white, inner sep=1pt, xshift=-4pt] at (2.6,5.7,2.65) {$p$};
+		\end{scope}
+		% the ray continues in the Nether: it is reflected at the inner face
+		% x = 1 of the obsidian frame and leaves the chunks through y = 0
+		\begin{scope}[voxels=0]
+			\draw[hidden ray] (2.41,2,3.37) -- (1,1.25,3.52) -- (1.47,1,3.57);
+			\draw[ray, -{Stealth[length=4pt, width=3pt]}] (1.47,1,3.57) -- (3.37,0,3.76);
+			\node[hit] at (1,1.25,3.52) {};
+		\end{scope}
+	\end{tikzpicture}
+	\caption{A typical render pass. The ray starts at the centre $p$ of the
+		head of the player in the Overworld and passes through the plane
+		$\Pi_{q,u,v}$ in front of its face. It is reflected by the trunk of the
+		tree and enters the Nether portal from behind. Through the wormhole face
+		it continues in the Nether, where it is reflected by the obsidian frame
+		of the portal, until it finally reaches the boundary of the chunks.
+		Dashed parts of the ray are hidden behind blocks.}
+	\label{fig:render-pass}
+\end{figure}
+
+To complete the rendering pipeline, we are only left with constructing a map
+$f \colon \Stream(U) \to \Stream(\mathrm{Color})$, that is, a global element of
+$\Stream(\mathrm{Color})^{\Stream(U)}$. Since by the above construction we can
+associate to each point $p \in U$ an entity or a block ID, we get a canonical
+map
+\[
+	g \colon \Stream(U) \to \Stream(U \times (\EntityID + \BlockID)).
+\]
+Depending on how we implement these blocks and entities, we can find a map
+\[
+	h \colon \Stream(U \times (\EntityID + \BlockID)) \to \Stream(U \times \mathrm{Color}),
+\]
+where $\mathrm{Color} \cong [0,255]^3$ is the standard RGB spectrum. (For RGBA
+we would need to change our ray tracing to pass through certain points on
+objects.)
+
+Finally, we can also apply some post-processing effects, like a depth fog. We
+can do so by considering
+\[
+	\mathrm{length} \colon \Stream(U) \to \Stream(\RR_{\ge 0}),
+\]
+which measures the $\lambda_n$ from \eqref{eq:collision-distance}. Lifting
+$x \mapsto \min(1, 1/x)$ to $\Stream(\RR_{\ge 0})$, we can multiply
+$\Stream(\mathrm{Color})$ by the resulting $\Stream(\RR_{\ge 0})$, which dims
+the colour the further the ray has travelled.
+
+Writing $\varphi(x) \coloneqq \min(1, 1/x)$, $\cdot \colon \mathrm{Color} \times
+\RR_{\ge 0} \to \mathrm{Color}$ for the scalar multiplication, and using
+$\Stream(\mathrm{Color}) \times \Stream(\RR_{\ge 0}) \cong
+\Stream(\mathrm{Color} \times \RR_{\ge 0})$, these maps fit into the
+commutative diagram
+\[
+	\begin{tikzcd}[column sep=huge, row sep=large]
+		\Stream(U) \ar[r, "g"] \ar[d, "\mathrm{length}"']
+		\ar[ddrr, dashed, "{\langle c, d \rangle}" description]
+		\ar[dddrr, rounded corners, "f"' pos=0.75,
+		to path={(\tikztostart.west) -- ++(-1.5em,0) |- (\tikztotarget.west) \tikztonodes}]
+		& \Stream(U \times (\EntityID + \BlockID)) \ar[r, "h"]
+		& \Stream(U \times \mathrm{Color}) \ar[d, "\Stream(\pi_2)"] \\
+		\Stream(\RR_{\ge 0}) \ar[d, "\Stream(\varphi)"']
+		& & \Stream(\mathrm{Color}) \\
+		\Stream(\RR_{\ge 0})
+		& & \Stream(\mathrm{Color}) \times \Stream(\RR_{\ge 0})
+		\ar[u, "\pi_1"'] \ar[ll, "\pi_2"'] \ar[d, "\Stream(\cdot)"] \\
+		& & \Stream(\mathrm{Color})
+	\end{tikzcd}
+\]
+where $c \coloneqq \Stream(\pi_2) \circ h \circ g$ is the colour along the ray,
+$d \coloneqq \Stream(\varphi) \circ \mathrm{length}$ is the dimming factor, and
+the rendering map is $f = \Stream(\cdot) \circ \langle c, d \rangle$.
 
 % TODO

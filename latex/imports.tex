@@ -175,6 +175,24 @@
 				\ifnum\i=1 \node[chainnode] (v\i) at (0, 0) {$\l$};%
 				\else \node[chainnode, right=1.8mm of v\j] (v\i) {$\l$}; \draw[oedge] (v\i) -- (v\j);\fi
 			}}}
+% inline glyphs for the node labels of the graphs in Fig.~\ref{fig:lattices},
+% drawn like the nodes there: a cube, a face, an edge and a vertex
+\tikzset{cellglyphpic/.style={x={(1.0cm,0cm)}, y={(0.55cm,0.38cm)}, z={(0cm,1.0cm)},
+			scale=0.26, line join=round, line cap=round, baseline=0.1ex},
+	inlinecellglyph/.style={line width=0.45pt, preaction={fill=white}}}
+\newcommand{\cubeglyph}{\tikz[cellglyphpic]{%
+		\draw[inlinecellglyph] (0,0,0) -- (1,0,0) -- (1,0,1) -- (0,0,1) -- cycle;
+		\draw[inlinecellglyph, pattern={Lines[angle=90, distance=1.1pt, line width=0.3pt]}]
+		(1,0,0) -- (1,1,0) -- (1,1,1) -- (1,0,1) -- cycle;
+		\draw[inlinecellglyph, pattern={Dots[distance=1.2pt, radius=0.3pt]}]
+		(0,0,1) -- (1,0,1) -- (1,1,1) -- (0,1,1) -- cycle;}}
+\newcommand{\faceglyph}{\tikz[cellglyphpic]{%
+		\draw[inlinecellglyph] (0,0,0) -- (1,0,0) -- (1,0,1) -- (0,0,1) -- cycle;}}
+\newcommand{\edgeglyph}{\tikz[cellglyphpic]{%
+		\draw[line width=2.6pt, line cap=round] (0,0,0.5) -- (1,0,0.5);
+		\draw[line width=1.4pt, line cap=round, white] (0,0,0.5) -- (1,0,0.5);}}
+\newcommand{\vertexglyph}{\tikz[baseline=0.1ex]{%
+		\draw[inlinecellglyph] (0,0.13cm) circle[radius=2.2pt];}}
 \usepackage{mathpartir} % inference rules for the internal logic
 \usepackage{aliascnt}
 \usepackage[capitalise,nameinlink]{cleveref}
