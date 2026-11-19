@@ -5,21 +5,24 @@ $\toposoftrees$ to model streams, or more fittingly, finite approximations
 thereof, which is done by modelling the passage of time, or of computation
 steps, on the level of types.
 
-We can in fact use this same construction to model \emph{ticks}, as they are
-called in Minecraft, and therefore state over time. Consider again a Mathcraft
+We can in fact use this same construction to model \emph{ticks} (as they are
+called in Minecraft), where a tick is a discrete step in time updating the
+state. Consider again a Mathcraft
 sheaf $W$ on $(V, \tau)$. We can lift it into the topos of trees by the
 diagonal functor $\Delta$, yielding
 \[
+	\Delta W \in \functorcat{\omega^{\mathrm{op}}}{\functorcat{\tau^{\mathrm{op}}}{\Set}},
+	\qquad
 	\Delta W(k) = W \quad \text{for all } k \in \NN,
 \]
 where all restriction maps are identities.
 \todo[inline]{Maybe instead this should be
 	$\functorcat{\omega^{\mathrm{op}}}{\functorcat{\tau^{\mathrm{op}}}{\Set}}$?}
 
-The interesting part, however, is that we can set $W(0) = W$, and for each
-permissible event $e$ that can change the Mathcraft sheaf (i.e.\ adding or
-removing blocks or entities, or mutating their position), we can add a map
-from a Mathcraft sheaf $W'(1)$ to $W$, which we interpret as the event $e$
-happening during the first tick.
+The interesting part, however, is the case in which we do not only have
+identity maps. Let $W(0) = W$, and we will define the rest coinductively. We
+wish to have a map $f \colon W(k+1) \to W(k)$ for each event $f$ that may
+happen in $W$, like adding or removing blocks or entities, or mutating their
+position.
 
 % TODO
