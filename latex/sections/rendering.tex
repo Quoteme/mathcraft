@@ -53,12 +53,12 @@ question is: how do we \emph{render} such a sheaf?
 		that displays the information contained in $W$. During gameplay, a user is
 		typically assigned a dedicated entity called the \emph{player}, and the user
 		has a \emph{rendering distance}. The player is given by a unique
-		$e \in \EntityID$ contained in the image of the entity sheaf $E$ of $W$, i.e.\
+		$e \in \Entity$ contained in the image of the entity sheaf $E$ of $W$, i.e.\
 		$e \in \operatorname{flatten} \im E(V)$. We can find at least one chunk
 		$C_{i,j,k}^{w,d,h}$ such that $e \in E(C_{i,j,k}^{w,d,h})$, and then $e_p = (x,y,z)$, where
 		$(x,y,z) \in [0,w) \times [0,d) \times [0,h)$ is uniquely determined by
-		$e \in E(C_{i,j,k}^{w,d,h})(x,y,z)$. By its $\EntityID$, we wish to associate
-		with it a velocity $e_v = \partial e_p / \partial t$, an acceleration
+		$e \in E(C_{i,j,k}^{w,d,h})(x,y,z)$. We wish to associate
+		with $e$ a velocity $e_v = \partial e_p / \partial t$, an acceleration
 		$e_a = \partial^2 e_p / \partial t^2$, a \emph{heading
 			direction} $e_d \in S^2$, which encodes in what direction the entity looks,
 		and an \emph{entity height} $e_h \in \RR_{\ge 0}$, which is the offset
@@ -296,6 +296,8 @@ a heading vector $v \in T_p U$, this yields
 		\exp_{\mathrm{ray}_{p,v}^{(1)}}(\lambda_2 v_1),\
 	\dots\right],
 \end{align*}
+\todo[inline]{$\mathrm{ray} \colon U \times T_{?}(U) \to \Stream(U)$? Requires
+	dependent typing though\dots{} How?}
 where $\mathrm{ray}_{p,v}^{(n)}$ denotes the $n$-th entry of
 $\mathrm{ray}_{p,v}$, and $\lambda_{n+1}$ and $v_n$ are constructed as above,
 starting with $v_0 = v$.
@@ -652,18 +654,36 @@ Now, a typical render pass would look like \cref{fig:render-pass}.
 To complete the rendering pipeline, we are only left with constructing a map
 $f \colon \Stream(U) \to \Stream(\mathrm{Color})$, that is, a global element of
 $\Stream(\mathrm{Color})^{\Stream(U)}$. Since by the above construction we can
-associate to each point $p \in U$ an entity or a block ID, we get a canonical
+associate to each point $p \in U$ an entity or a block, we get a canonical
 map
 \[
-	g \colon \Stream(U) \to \Stream(U \times (\EntityID + \BlockID)).
+	g \colon \Stream(U) \to \Stream(U \times (\Entity + \Block)).
 \]
 Depending on how we implement these blocks and entities, we can find a map
 \[
-	h \colon \Stream(U \times (\EntityID + \BlockID)) \to \Stream(U \times \mathrm{Color}),
+	h \colon \Stream(U \times (\Entity + \Block)) \to \Stream(U \times \mathrm{Color}),
 \]
 where $\mathrm{Color} \cong [0,255]^3$ is the standard RGB spectrum. (For RGBA
 we would need to change our ray tracing to pass through certain points on
-objects.)
+objects.) For example, we may define a texture map
+\[
+	\mathrm{color}_{\Block} \colon \Block \times \partial [0,1]^3 \to \mathrm{Color},
+\]
+which takes a block together with a position on its surface and returns the
+colour of the block at that position. Similarly, if every entity
+$e \in \Entity$ comes with a model $M_e \subseteq \RR^3$, a compact set
+describing its shape in local coordinates, we may define
+\[
+	\mathrm{color}_{\Entity} \colon \coprod_{e \in \Entity} \partial M_e \to \mathrm{Color}.
+\]
+The map $h$ then transforms a point $p$ where the ray hit an object into the
+local coordinates of that block or entity, and evaluates
+$\mathrm{color}_{\Block}$ or $\mathrm{color}_{\Entity}$ there. Note however
+that the collision step of our ray tracer assumes every entity to be a sphere
+of radius $s$, so the renderer currently only works for entities whose model
+$M_e$ is a closed ball of radius $s$, that is, with $\partial M_e \cong S^2$.
+Supporting general models would require computing the collision distance and
+the unit normal $\nu_{n+1}$ for arbitrary surfaces $\partial M_e$.
 
 Finally, we can also apply some post-processing effects, like a depth fog. We
 can do so by considering
@@ -686,7 +706,7 @@ commutative diagram
 		\ar[ddrr, dashed, "{\langle c, d \rangle}" description]
 		\ar[dddrr, rounded corners, "f"' pos=0.75,
 		to path={(\tikztostart.west) -- ++(-1.5em,0) |- (\tikztotarget.west) \tikztonodes}]
-		& \Stream(U \times (\EntityID + \BlockID)) \ar[r, "h"]
+		& \Stream(U \times (\Entity + \Block)) \ar[r, "h"]
 		& \Stream(U \times \mathrm{Color}) \ar[d, "\Stream(\pi_2)"] \\
 		\Stream(\RR_{\ge 0}) \ar[d, "\Stream(\varphi)"']
 		& & \Stream(\mathrm{Color}) \\

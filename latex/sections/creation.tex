@@ -1,4 +1,4 @@
-\section{Creation and Destruction of Blocks and Entities}\label{sec:creation-destruction}
+\section{Creation, Destruction and Mutation of Blocks and Entities}\label{sec:creation-destruction}
 
 As we have seen in \cref{sec:rendering}, we can use the topos of trees
 $\toposoftrees$ to model streams, or more fittingly, finite approximations
@@ -20,9 +20,349 @@ where all restriction maps are identities.
 	$\functorcat{\omega^{\mathrm{op}}}{\functorcat{\tau^{\mathrm{op}}}{\Set}}$?}
 
 The interesting part, however, is the case in which we do not only have
-identity maps. Let $W(0) = W$, and we will define the rest coinductively. We
-wish to have a map $f \colon W(k+1) \to W(k)$ for each event $f$ that may
+identity maps. We write $\tilde{W}$ for such an object in the topos of trees.
+Let $\tilde{W}(0) = W$, and we will define the rest coinductively. We
+wish to have a map $f \colon \tilde{W}(k+1) \to \tilde{W}(k)$ for each event $f$ that may
 happen in $W$, like adding or removing blocks or entities, or mutating their
 position.
+
+	{%
+		\tikzset{
+			tickpic/.style={
+					x={(1.0cm,0cm)}, y={(0.55cm,0.38cm)}, z={(0cm,1.0cm)},
+					scale=1.9, line join=round, line cap=round},
+			chunkline/.style={line width=0.4pt, dash pattern=on 2pt off 1.5pt},
+			vox/.style={line width=0.3pt, preaction={fill=white}},
+			% ordered "dithering": black and white only
+			dither sparse/.style={pattern={Dots[distance=2.2pt, radius=0.28pt]}},
+			dither mid/.style={pattern={Dots[distance=1.3pt, radius=0.3pt]}},
+			dither lines/.style={pattern={Lines[angle=45, distance=1.3pt, line width=0.3pt]}},
+			dither vert/.style={pattern={Lines[angle=90, distance=1.1pt, line width=0.3pt]}},
+			dither dark/.style={pattern={Hatch[angle=45, distance=1.1pt, line width=0.3pt]}},
+			% voxels of side 0.2, shifted half a voxel to the right within the chunk
+			inchunk/.style={shift={(0.1,0,0.025)}, scale=0.2},
+		}
+		% a unit cube at voxel (#1,#2,#3), faces styled #4 (top), #5 (front), #6 (right)
+		\newcommand{\vox}[6]{%
+			\draw[vox,#5] (#1,#2,#3) -- ++(1,0,0) -- ++(0,0,1) -- ++(-1,0,0) -- cycle;
+			\draw[vox,#6] ({#1+1},#2,#3) -- ++(0,1,0) -- ++(0,0,1) -- ++(0,-1,0) -- cycle;
+			\draw[vox,#4] (#1,#2,{#3+1}) -- ++(1,0,0) -- ++(0,1,0) -- ++(-1,0,0) -- cycle;}
+		\newcommand{\dirt}[3]{\vox{#1}{#2}{#3}{dither sparse}{dither mid}{dither dark}}
+		\newcommand{\grass}[3]{\vox{#1}{#2}{#3}{dither sparse}{dither mid}{dither dark}}
+		\newcommand{\wood}[3]{\vox{#1}{#2}{#3}{dither mid}{dither vert}{dither dark}}
+		\newcommand{\leaves}[3]{\vox{#1}{#2}{#3}{dither sparse}{dither lines}{dither dark}}
+		\newcommand{\chest}[3]{%
+			\begin{scope}[shift={({#1+0.1},{#2+0.1},#3)}, scale=0.8]
+				\vox{0}{0}{0}{}{}{dither sparse}
+				\draw[line width=0.3pt] (0,0,0.62) -- (1,0,0.62) -- (1,1,0.62);
+				\fill (0.42,0,0.48) rectangle (0.58,0,0.72);
+			\end{scope}}
+		% the hidden (back) edges of the chunk, drawn before its contents
+		\newcommand{\chunkback}{%
+			\draw[chunkline] (0,0,0) -- (0,1,0) -- (1,1,0);
+			\draw[chunkline] (0,1,0) -- (0,1,1.25);}
+		% the visible (front) edges of the chunk, drawn after its contents
+		\newcommand{\chunkfront}{%
+			\draw[chunkline] (0,0,0) rectangle (1,0,1.25);
+			\draw[chunkline] (1,0,0) -- (1,1,0) -- (1,1,1.25) -- (0,1,1.25) -- (0,0,1.25);
+			\draw[chunkline] (1,0,1.25) -- (1,1,1.25);}
+		% the island of Fig.~\ref{fig:block-sheaf}, the grass block at (2,0,1)
+		% is drawn by #1, so that it can be left out
+		\newcommand{\island}[1]{%
+			\leaves{0}{4}{4}\leaves{1}{4}{4}\leaves{1}{4}{5}\leaves{2}{4}{4}
+			\dirt{0}{3}{0}\grass{0}{3}{1}\leaves{0}{3}{4}\leaves{0}{3}{5}
+			\dirt{1}{3}{0}\grass{1}{3}{1}\wood{1}{3}{2}\wood{1}{3}{3}
+			\leaves{1}{3}{4}\leaves{1}{3}{5}\leaves{2}{3}{4}\leaves{2}{3}{5}
+			\dirt{0}{2}{0}\grass{0}{2}{1}\leaves{0}{2}{4}\dirt{1}{2}{0}
+			\grass{1}{2}{1}\leaves{1}{2}{4}\leaves{1}{2}{5}\leaves{2}{2}{4}
+			\dirt{0}{1}{0}\grass{0}{1}{1}\dirt{1}{1}{0}\grass{1}{1}{1}
+			\dirt{2}{1}{0}\grass{2}{1}{1}\dirt{3}{1}{0}\grass{3}{1}{1}
+			\dirt{0}{0}{0}\grass{0}{0}{1}\dirt{1}{0}{0}\grass{1}{0}{1}
+			\dirt{2}{0}{0}#1\dirt{3}{0}{0}\grass{3}{0}{1}\chest{3}{0}{2}}
+		% paragraph on the left, Figure (one tick) on the right
+		\noindent
+		\begin{minipage}[t]{0.58\textwidth}
+			\vspace{0pt}
+			Consider for example the sheaf $\tilde{W}$ at time $0$, as shown in
+			\cref{fig:tick-0}, and one tick later, as shown in \cref{fig:tick-1}. Here a
+			block was removed one tick later. On the level of sheaves (we will only
+			consider the block sheaf $\tilde{B}$, where $\tilde{W} = \tilde{E} \times
+				\tilde{B}$), the grass block at the position $(2,0,1)$ of the chunk
+			$C \coloneqq C_{w,0,h}^{w,d,h}$ has been replaced by air, so
+			\begin{align*}
+				\tilde{B}(0)(C)(2,0,1) & = \mathrm{GrassBlock}, \\
+				\tilde{B}(1)(C)(2,0,1) & = \mathrm{AirBlock},
+			\end{align*}
+			and $\tilde{B}(1)(C)(x,y,z) = \tilde{B}(0)(C)(x,y,z)$ for every other
+			position $(x,y,z) \neq (2,0,1)$.
+
+			This means we require at least one morphism
+			$f \colon \tilde{W}(k+1) \to \tilde{W}(k)$ for each possible combination
+			of blocks and how they might be mutated, giving a lower bound of
+			\[
+				\prod_{C^{w,d,h}} \operatorname{card}(\Block)^{w \cdot d \cdot h},
+			\]
+			where $C^{w,d,h}$ ranges over the chunks of $\tilde{W}(k)$.
+		\end{minipage}%
+		\hfill
+		\begin{minipage}[t]{0.38\textwidth}
+			\vspace{0pt}
+			\captionsetup{type=figure}
+			\centering
+			\begin{subfigure}{\linewidth}
+				\centering
+				\begin{tikzpicture}[tickpic]
+					\chunkback
+					\begin{scope}[inchunk]
+						\island{\grass{2}{0}{1}}
+					\end{scope}
+					\chunkfront
+				\end{tikzpicture}
+				\caption{The block sheaf $\tilde{B}(0)$ at tick $0$.}
+				\label{fig:tick-0}
+			\end{subfigure}
+			\par\medskip
+			\begin{subfigure}{\linewidth}
+				\centering
+				\begin{tikzpicture}[tickpic]
+					\chunkback
+					\begin{scope}[inchunk]
+						\island{}
+						% outline of the removed block
+						\draw[chunkline] (2,0,1) -- (2,0,2) -- (3,0,2);
+						\draw[chunkline] (2,0,2) -- (2,1,2) -- (3,1,2) -- (3,0,2);
+					\end{scope}
+					\chunkfront
+				\end{tikzpicture}
+				\caption{The block sheaf $\tilde{B}(1)$ one tick later.}
+				\label{fig:tick-1}
+			\end{subfigure}
+			\caption{A block is removed from the chunk $C_{w,0,h}^{w,d,h}$
+				between tick $0$ and tick $1$.}
+			\label{fig:tick}
+		\end{minipage}
+		\par\medskip
+
+		Importantly, we need to be clear what such a morphism actually is. Since
+		$\tilde{W}(k+1)$ and $\tilde{W}(k)$ are both sheaves, we require the morphism
+		$f$ to be a morphism of such. For recollection, this means:
+
+		\begin{definition}\label{def:sheaf-morphism}
+			Let $F$ and $G$ be sheaves on a topological space $(V, \tau)$. A
+			\emph{morphism of sheaves} $f \colon F \to G$ is a natural transformation
+			between $F$ and $G$, regarded as functors $\tau^{\mathrm{op}} \to \Set$.
+			That is, $f$ consists of a function $f_U \colon F(U) \to G(U)$ for every
+			open set $U \in \tau$, such that for all open sets $U' \subseteq U$ the
+			square
+			\[
+				\begin{tikzcd}
+					F(U) \ar[r, "f_U"] \ar[d, "\restr{(-)}{U'}"']
+					& G(U) \ar[d, "\restr{(-)}{U'}"] \\
+					F(U') \ar[r, "f_{U'}"']
+					& G(U')
+				\end{tikzcd}
+			\]
+			commutes, i.e.\ $\restr{f_U(s)}{U'} = f_{U'}(\restr{s}{U'})$ for every
+			section $s \in F(U)$.
+		\end{definition}
+
+		However, it is clear that this naturality is satisfied here, as in this case it
+		(idiomatically) just requires that modifying a block or an entity commutes with
+		increasing or decreasing the rendering distance. Figuratively, this
+		commutativity is shown in \cref{fig:naturality}.
+
+		% the hidden (back) edges of the two chunks C' and C next to each other
+		\newcommand{\twochunkback}{%
+			\draw[chunkline] (-1,0,0) -- (-1,1,0) -- (1,1,0);
+			\draw[chunkline] (-1,1,0) -- (-1,1,1.25);
+			\draw[chunkline] (0,0,0) -- (0,1,0) -- (0,1,1.25);}
+		% the visible (front) edges of the two chunks C' and C
+		\newcommand{\twochunkfront}{%
+			\draw[chunkline] (-1,0,0) rectangle (1,0,1.25);
+			\draw[chunkline] (0,0,0) -- (0,0,1.25) -- (0,1,1.25);
+			\draw[chunkline] (1,0,0) -- (1,1,0) -- (1,1,1.25) -- (-1,1,1.25) -- (-1,0,1.25);
+			\draw[chunkline] (1,0,1.25) -- (1,1,1.25);}
+		% the contents of the neighbouring chunk C' to the left of C, which is
+		% left untouched by the event: a small grass platform with a bush
+		\newcommand{\neighbour}{%
+			\dirt{-4}{2}{0}\grass{-4}{2}{1}\dirt{-3}{2}{0}\grass{-3}{2}{1}
+			\dirt{-2}{2}{0}\grass{-2}{2}{1}
+			\dirt{-4}{1}{0}\grass{-4}{1}{1}\dirt{-3}{1}{0}\grass{-3}{1}{1}
+			\leaves{-3}{1}{2}\dirt{-2}{1}{0}\grass{-2}{1}{1}
+			\dirt{-4}{0}{0}\grass{-4}{0}{1}\dirt{-3}{0}{0}\grass{-3}{0}{1}
+			\dirt{-2}{0}{0}\grass{-2}{0}{1}}
+		% outline of the removed block, drawn inside the inchunk scope
+		\newcommand{\removed}{%
+			\draw[chunkline] (2,0,1) -- (2,0,2) -- (3,0,2);
+			\draw[chunkline] (2,0,2) -- (2,1,2) -- (3,1,2) -- (3,0,2);}
+		\tikzset{naturalitypic/.style={tickpic, scale=1.6/1.9}}
+		% the four corners of the naturality square
+		\newsavebox{\natTopLeft}\newsavebox{\natTopRight}
+		\newsavebox{\natBotLeft}\newsavebox{\natBotRight}
+		\savebox{\natTopLeft}{\begin{tikzpicture}[naturalitypic]
+				\twochunkback
+				\begin{scope}[inchunk]
+					\neighbour
+					\island{\grass{2}{0}{1}}
+				\end{scope}
+				\twochunkfront
+			\end{tikzpicture}}
+		\savebox{\natTopRight}{\begin{tikzpicture}[naturalitypic]
+				\twochunkback
+				\begin{scope}[inchunk]
+					\neighbour
+					\island{}
+					\removed
+				\end{scope}
+				\twochunkfront
+			\end{tikzpicture}}
+		\savebox{\natBotLeft}{\begin{tikzpicture}[naturalitypic]
+				\chunkback
+				\begin{scope}[inchunk]
+					\island{\grass{2}{0}{1}}
+				\end{scope}
+				\chunkfront
+			\end{tikzpicture}}
+		\savebox{\natBotRight}{\begin{tikzpicture}[naturalitypic]
+				\chunkback
+				\begin{scope}[inchunk]
+					\island{}
+					\removed
+				\end{scope}
+				\chunkfront
+			\end{tikzpicture}}
+
+		\begin{figure}[ht]
+			\centering
+			\begin{tikzcd}[column sep=large, row sep=large]
+				\usebox{\natTopLeft}
+				\ar[d, "\restr{(-)}{C}"']
+				& \usebox{\natTopRight}
+				\ar[l, "f_{C' \cup C}"']
+				\ar[d, "\restr{(-)}{C}"] \\
+				\usebox{\natBotLeft}
+				& \usebox{\natBotRight}
+				\ar[l, "f_C"]
+			\end{tikzcd}
+			\caption{Naturality of an event $f \colon \tilde{B}(1) \to \tilde{B}(0)$.
+				Top: the sections over the two chunks $C' \cup C$, where
+				$C' \coloneqq C_{0,0,h}^{w,d,h}$ is the chunk to the left of
+				$C = C_{w,0,h}^{w,d,h}$. Bottom: their restrictions to $C$. Left:
+				before the block is removed. Right: after the block is removed.
+				Removing the block and then restricting to $C$ gives the same section
+				as first restricting to $C$ and then removing the block.}
+			\label{fig:naturality}
+		\end{figure}
+
+Now that we have added the passage of time to our model, we can also implement
+the effects of velocity and acceleration on entities. Consider again
+$\mathrm{Player} \in \Entity$. There are different possible ways to encode the
+effects of $e_v$ and $e_a$, which we have introduced in \cref{sec:rendering}.
+One method is to encode the derivatives on the level of the base space of the
+entity sheaf. Writing $Q_{w,d,h} \coloneqq [0,w) \times [0,d) \times [0,h)$, the
+position, velocity and acceleration of an entity at a given time are exactly
+the data of its trajectory $\gamma \colon \RR \to Q_{w,d,h}$ up to second order,
+that is, the \emph{$2$-jet} $j^2_0 \gamma$ of $\gamma$ at time $0$. These
+$2$-jets form the second order tangent bundle $T^{(2)} Q_{w,d,h}$, and since
+$Q_{w,d,h} \subseteq \RR^3$ we have
+\[
+	T^{(2)} Q_{w,d,h} \cong Q_{w,d,h} \times \RR^3 \times \RR^3,
+	\qquad
+	j^2_0 \gamma \mapsto (\gamma(0), \gamma'(0), \gamma''(0)).
+\]
+We would then need to extend $\Entities_{w,d,h}$ to
+\[
+	\Entities_{w,d,h} \coloneqq
+	\Hom_{\Set}\bigl(T^{(2)} Q_{w,d,h},\ \List(\Entity)\bigr),
+\]
+so that we can encode the position $p \in Q_{w,d,h}$, the velocity
+$v \in T_p Q_{w,d,h} \cong \RR^3$ and the acceleration $a \in \RR^3$ of an
+entity $e$ by an $f \in \Entities_{w,d,h}$ with $e \in f(j^2_0 \gamma)$,
+where $\gamma$ is any trajectory with $\gamma(0) = p$, $\gamma'(0) = v$ and
+$\gamma''(0) = a$. Another
+possibility is to have a different element $\mathrm{Player}_{v,a} \in \Entity$
+for each $v, a \in \RR^3$. For simplicity, we will use this approach,
+knowing full well that this implies that $\Entity$ does not only contain the
+entities themselves, but actually tuples of entities together with their
+velocity and acceleration.
+
+Let therefore each tick represent a passage of $\Delta t$ time, which lets us
+approximate the change of position, velocity and acceleration of an entity by
+\begin{align*}
+	p_{k+1} & \coloneqq \exp_{p_k}\bigl((\Delta t)\, v_k\bigr), \\
+	v_{k+1} & \coloneqq v_k + (\Delta t)\, a_k, \\
+	a_{k+1} & \coloneqq a_k,
+\end{align*}
+or, using $\laterModal$,
+\begin{align*}
+	p & \coloneqq \exp_{\laterModal p}\bigl((\Delta t)\, \laterModal v\bigr), \\
+	v & \coloneqq \laterModal v + (\Delta t)\, \laterModal a, \\
+	a & \coloneqq \laterModal a.
+\end{align*}
+\todo[inline]{$\laterModal p$ (and $\laterModal$ applied to elements in
+	general) has never been defined before\dots}
+We can then update the position of the entity $e_{v,a}$ via the morphism of
+entity sheaves given by
+\begin{align*}
+	\tilde{E}(C)(\laterModal p) & \coloneqq
+	\later \tilde{E}(C)(\laterModal p) \setminus [e_{\laterModal v, \laterModal a}], \\
+	\tilde{E}(C')(p)            & \coloneqq
+	\later \tilde{E}(C')(p) \cup [e_{v,a}],
+\end{align*}
+where $C$ and $C'$ are chunks containing $\laterModal p$ and $p$ respectively.
+A jumping player, with an initial velocity of $1$ upwards and a constant
+acceleration of $0.1$ downwards, is shown in \cref{fig:jump}.
+
+	% the two chunks C (bottom) and the chunk above it, hidden (back) edges
+	\newcommand{\stackback}{%
+		\draw[chunkline] (0,0,0) -- (0,1,0) -- (1,1,0);
+		\draw[chunkline] (0,1,0) -- (0,1,2.5);
+		\draw[chunkline] (0,1,1.25) -- (1,1,1.25);}
+	% the visible (front) edges of the two stacked chunks
+	\newcommand{\stackfront}{%
+		\draw[chunkline] (0,0,0) rectangle (1,0,2.5);
+		\draw[chunkline] (0,0,1.25) -- (1,0,1.25) -- (1,1,1.25);
+		\draw[chunkline] (1,0,0) -- (1,1,0) -- (1,1,2.5) -- (0,1,2.5) -- (0,0,2.5);
+		\draw[chunkline] (1,0,2.5) -- (1,1,2.5);}
+	% one tick of the jump: the island with the player, whose feet are #1
+	% blocks above the grass block at (1,0,1)
+	\newcommand{\jumpframe}[1]{%
+		\begin{tikzpicture}[tickpic, scale=1/1.9]
+			\stackback
+			\begin{scope}[inchunk]
+				\island{\grass{2}{0}{1}}
+				\pic[scale=0.36] at (1.5,0.5,{2+#1}) {person};
+			\end{scope}
+			\stackfront
+		\end{tikzpicture}}
+	% the positions p_k for p_0 = 0, v_0 = 1, a = -0.1 and \Delta t = 4
+	\newsavebox{\jumpA}\savebox{\jumpA}{\jumpframe{0}}
+	\newsavebox{\jumpB}\savebox{\jumpB}{\jumpframe{4}}
+	\newsavebox{\jumpC}\savebox{\jumpC}{\jumpframe{6.4}}
+	\newsavebox{\jumpD}\savebox{\jumpD}{\jumpframe{7.2}}
+	\newsavebox{\jumpE}\savebox{\jumpE}{\jumpframe{6.4}}
+	\newsavebox{\jumpF}\savebox{\jumpF}{\jumpframe{4}}
+	\newsavebox{\jumpG}\savebox{\jumpG}{\jumpframe{0}}
+
+	\begin{figure}[ht]
+		\centering
+		\begin{tikzcd}[column sep=small]
+			\usebox{\jumpA}
+			& \usebox{\jumpB} \ar[l, "f_{0}"']
+			& \usebox{\jumpC} \ar[l, "f_{1}"']
+			& \usebox{\jumpD} \ar[l, "f_{2}"']
+			& \usebox{\jumpE} \ar[l, "f_{3}"']
+			& \usebox{\jumpF} \ar[l, "f_{4}"']
+			& \usebox{\jumpG} \ar[l, "f_{5}"']
+		\end{tikzcd}
+		\caption{A jumping player $e_{v,a}$ in the chunk
+			$C = C_{w,0,h}^{w,d,h}$ and the chunk above it, over the ticks
+			$k = 0, \dots, 6$ (from left to right), with $p_0$ on top of a grass
+			block, $v_0 = 1$ upwards, $a = 0.1$ downwards and $\Delta t = 4$. The
+			heights $p_k - p_0 = 0, 4, 6.4, 7.2, 6.4, 4, 0$ (in blocks) trace an
+			arch, and in between the player leaves $C$ for the chunk above it.}
+		\label{fig:jump}
+	\end{figure}
+}
 
 % TODO

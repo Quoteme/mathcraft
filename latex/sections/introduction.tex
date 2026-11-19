@@ -98,13 +98,17 @@ $P \colon \tau^{\mathrm{op}} \to \Set$, which assigns to every chunk the set
 \]
 of its possible contents, where
 \begin{align*}
-	\Blocks_{w,d,h}   & \coloneqq \Hom_{\Set}(\NN_{<w} \times \NN_{<d} \times \NN_{<h},\ \BlockID), \\
-	\Entities_{w,d,h} & \coloneqq \Hom_{\Set}([0,w) \times [0,d) \times [0,h),\ \List(\EntityID)),
+	\Blocks_{w,d,h}   & \coloneqq \Hom_{\Set}(\NN_{<w} \times \NN_{<d} \times \NN_{<h},\ \Block), \\
+	\Entities_{w,d,h} & \coloneqq \Hom_{\Set}([0,w) \times [0,d) \times [0,h),\ \List(\Entity)),
 \end{align*}
-where $\BlockID \cong \NN$ stores which block is placed at a given position
-(say $0$ is an empty or air block, $1$ is a dirt block, $2$ is a water block,
-and so on), and $\EntityID \cong \NN$ stores which entity is placed at a given
-point of a chunk. Here $\List(A)$ is the inductive set with
+where $\Block$ is the set of all possible blocks (say
+$\mathrm{AirBlock} \in \Block$, $\mathrm{DirtBlock} \in \Block$,
+$\mathrm{WaterBlock} \in \Block$, and so on), and $\Entity$ is the set of all
+possible entities (say $\mathrm{Player} \in \Entity$,
+$\mathrm{Zombie} \in \Entity$, and so on). A function in $\Blocks_{w,d,h}$
+assigns a block to every position of a chunk, and a function in
+$\Entities_{w,d,h}$ assigns to every point of a chunk the entities located
+there. Here $\List(A)$ is the inductive set with
 $\List(A) \cong A \times \List(A) + 1$. Since the value at a point is a list,
 multiple entities may share a position.
 
