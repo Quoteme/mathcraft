@@ -27,6 +27,21 @@
 %\addtolength{\oddsidemargin}{\links}
 %\addtolength{\evensidemargin}{\links}
 
+% draft warning: a page-filling red exclamation mark with "DRAFT" below it
+\begin{titlepage}
+	\vspace*{\fill}
+	\begin{center}
+		\begin{tikzpicture}[scale=0.9]
+			\fill[red, rounded corners=8mm]
+			(-2.2, 0) -- (2.2, 0) -- (1.2, -13) -- (-1.2, -13) -- cycle;
+			\fill[red] (0, -15.8) circle[radius=1.7];
+			\node[text=red, font=\bfseries, anchor=north] at (0, -18.2)
+			{\resizebox{11cm}{!}{DRAFT}};
+		\end{tikzpicture}
+	\end{center}
+	\vspace*{\fill}
+\end{titlepage}
+
 \begin{titlepage}
 	\vspace*{14em}
 
@@ -34,7 +49,6 @@
 	\begin{center}
 		\baselineskip=55pt
 		\textbf{\huge \titel}
-		\todo[inline]{THIS IS A DRAFT!!!}
 		\baselineskip=0 pt
 	\end{center}
 

@@ -160,6 +160,13 @@
 \usepackage[super]{nth}
 \pgfplotsset{compat=1.18}
 \usetikzlibrary{3d, positioning, arrows.meta, patterns, patterns.meta}
+% draft watermark: drawn diagonally on top of every page, in translucent red
+\usepackage{eso-pic}
+\AddToShipoutPictureFG{%
+	\put(\LenToUnit{0.5\paperwidth},\LenToUnit{0.5\paperheight}){%
+		\tikz[overlay]\node[rotate={atan(\paperheight/\paperwidth)}, text=red,
+			opacity=0.2, font=\bfseries] at (0,0)
+		{\resizebox{29cm}{!}{DRAFT (lots of errors!)}};}} % A4 diagonal is about 36cm
 % chains of nodes drawn by the forests F(U_m) of the elements U_m of \Omega(n)
 \tikzset{forestrow/.style={baseline=-0.5ex, x=0.6cm, >=Stealth},
 	onode/.style={draw, rounded corners=3pt, fill=white, inner sep=1pt,
